@@ -542,9 +542,21 @@
     .export-btn:active { border-color: var(--green); background: var(--green-bg); color: var(--green); }
     .export-btn .eb-icon { font-size: 20px; }
 
-    /* ── ABOUT TAB ── */
-    #about-panel {
+    /* ── AYARLAR TAB ── */
+    #ayarlar-panel {
       padding: 14px 14px calc(var(--safe-bottom) + 14px);
+    }
+    .settings-section-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--primary);
+      margin: 4px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .settings-section-title.with-top-gap {
+      margin-top: 26px;
     }
     .about-card {
       background: var(--surface);
@@ -574,6 +586,106 @@
     .col-map td { padding: 7px 10px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
     .col-map tr:last-child td { border-bottom: none; }
     .col-tag { display: inline-block; background: var(--accent-light); color: var(--accent); font-weight: 700; padding: 1px 7px; border-radius: 6px; font-size: 12px; }
+
+    /* ── GOOGLE DRIVE PASSWORD MODAL ── */
+    #gdrive-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0);
+      z-index: 300;
+      display: none;
+      transition: background 0.25s;
+    }
+    #gdrive-modal-overlay.open {
+      background: rgba(0,0,0,0.5);
+      display: block;
+    }
+    #gdrive-password-modal {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -46%) scale(0.94);
+      width: min(340px, calc(100vw - 48px));
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg, 0 12px 40px rgba(0,0,0,0.25));
+      z-index: 301;
+      padding: 22px 20px calc(20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s, transform 0.22s;
+    }
+    #gdrive-password-modal.open {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      pointer-events: auto;
+    }
+    #gdrive-password-modal h3 {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #gdrive-password-modal p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    #gdrive-password-input {
+      width: 100%;
+      height: 46px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg);
+      color: var(--text-primary);
+      font-size: 18px;
+      font-family: var(--font);
+      font-weight: 600;
+      text-align: center;
+      letter-spacing: 4px;
+      padding: 0 12px;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    #gdrive-password-input:focus { border-color: var(--accent); }
+    #gdrive-password-error {
+      display: none;
+      color: var(--red, #e53935);
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    .gdrive-modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .gdrive-modal-actions button {
+      flex: 1;
+      height: 46px;
+      border-radius: var(--radius-md);
+      border: none;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: opacity 0.15s;
+    }
+    .gdrive-modal-actions button:active { opacity: 0.8; }
+    #gdrive-cancel-btn {
+      background: var(--bg);
+      color: var(--text-secondary);
+      border: 2px solid var(--border);
+    }
+    #gdrive-confirm-btn {
+      background: var(--accent);
+      color: #fff;
+    }
 
     /* ── DETAIL MODAL (bottom sheet) ── */
     #modal-overlay {
@@ -1003,7 +1115,7 @@
       <span>Məhsullar <span id="tab-count"></span></span>
     </button>
     <button class="tab-btn" data-tab="filters">
-      <span class="tab-icon">⚙️</span>
+      <span class="tab-icon">🔽</span>
       <span>Filterlər</span>
     </button>
     <button class="tab-btn" onclick="event.stopPropagation(); window.location.href='sifarisler.html';">
@@ -1018,9 +1130,9 @@
       <span class="tab-icon">⚠️</span>
       <span>Defektlər</span>
     </button>
-    <button class="tab-btn" data-tab="about">
-      <span class="tab-icon">ℹ️</span>
-      <span>Haqqında</span>
+    <button class="tab-btn" data-tab="ayarlar">
+      <span class="tab-icon">⚙️</span>
+      <span>Ayarlar</span>
     </button>
   </div>
 
@@ -1041,23 +1153,6 @@
 
     <!-- FILTERS -->
     <div class="tab-panel" id="filters-panel">
-
-      <!-- Import -->
-      <div class="import-section">
-        <div class="import-section-title">📥 Məlumat idxalı</div>
-        <button class="import-btn" id="excel-btn">
-          <span class="ib-icon">📊</span>
-          <span>Excel faylı idxal et (.xlsx / .xls)</span>
-        </button>
-        <button class="import-btn" id="images-btn">
-          <span class="ib-icon">🖼️</span>
-          <span>Şəkil qovluğu idxal et</span>
-        </button>
-        <button class="import-btn" id="zip-btn">
-          <span class="ib-icon">📚️</span>
-          <span>Şəkillər ZIP faylından idxal et</span>
-        </button>
-      </div>
 
       <!-- Export -->
       <div class="export-section">
@@ -1191,10 +1286,37 @@
 
     </div>
 
-    <!-- ABOUT -->
-    <div class="tab-panel" id="about-panel">
+    <!-- AYARLAR -->
+    <div class="tab-panel" id="ayarlar-panel">
+
+      <!-- Bazanı yenilə -->
+      <div class="settings-section-title">🔄 Bazanı yenilə</div>
+
+      <div class="import-section">
+        <div class="import-section-title">📥 Məlumat idxalı</div>
+        <button class="import-btn" id="excel-btn">
+          <span class="ib-icon">📊</span>
+          <span>Excel faylı idxal et (.xlsx / .xls)</span>
+        </button>
+        <button class="import-btn" id="images-btn">
+          <span class="ib-icon">🖼️</span>
+          <span>Şəkil qovluğu idxal et</span>
+        </button>
+        <button class="import-btn" id="zip-btn">
+          <span class="ib-icon">📚️</span>
+          <span>Şəkillər ZIP faylından idxal et</span>
+        </button>
+        <button class="import-btn" id="gdrive-btn">
+          <span class="ib-icon">☁️</span>
+          <span>Bazanı Google Drive-dan endir</span>
+        </button>
+      </div>
+
+      <!-- Haqqında -->
+      <div class="settings-section-title with-top-gap">ℹ️ Haqqında</div>
+
       <div class="about-card">
-        <h2>📦 Elnur PRO - Anbar İdarəetmə PWA</h2>
+        <h2>📦 Elnur PRO - Anbar İdarəetmə PWA (v10.0)</h2>
         <p>Bu tətbiq Elnur Abdullayev tərəfindən hazırlanıb və tam offline işləyir. İlk yükləmədən sonra internet bağlantısı olmadan da istifadə edilə bilər. Bütün məlumatlar cihazınızın IndexedDB bazasında saxlanır. Əlaqə üçün: 050-893-46-38</p>
       </div>
       <div class="about-card">
@@ -1239,6 +1361,19 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- GOOGLE DRIVE PASSWORD MODAL -->
+<div id="gdrive-modal-overlay"></div>
+<div id="gdrive-password-modal" role="dialog" aria-modal="true" aria-label="Şifrə tələb olunur">
+  <h3>🔒 Bazanı Google Drive-dan endir</h3>
+  <p>Davam etmək üçün şifrəni daxil edin.</p>
+  <input type="password" id="gdrive-password-input" placeholder="••••" inputmode="numeric" autocomplete="off" maxlength="16">
+  <div id="gdrive-password-error">Şifrə yanlışdır, yenidən cəhd edin.</div>
+  <div class="gdrive-modal-actions">
+    <button type="button" id="gdrive-cancel-btn">Ləğv et</button>
+    <button type="button" id="gdrive-confirm-btn">Təsdiqlə</button>
   </div>
 </div>
 
@@ -1796,6 +1931,59 @@ document.getElementById('zip-input').addEventListener('change', async (e) => {
     setStatusError('ZIP oxunarkən xəta: ' + err.message);
     console.error(err);
   }
+});
+
+// ─────────────────────────────────────────────
+// GOOGLE DRIVE - BAZANI YENİLƏ (şifrə qorumalı)
+// ─────────────────────────────────────────────
+const GDRIVE_FOLDER_LINK = 'https://drive.google.com/drive/folders/1opFXZNt7hN4LwmxcCO00sKgGGtRZNee3?usp=sharing';
+const GDRIVE_PASSWORD = '2085';
+
+const gdriveBtn = document.getElementById('gdrive-btn');
+const gdriveOverlay = document.getElementById('gdrive-modal-overlay');
+const gdriveModal = document.getElementById('gdrive-password-modal');
+const gdrivePasswordInput = document.getElementById('gdrive-password-input');
+const gdrivePasswordError = document.getElementById('gdrive-password-error');
+const gdriveCancelBtn = document.getElementById('gdrive-cancel-btn');
+const gdriveConfirmBtn = document.getElementById('gdrive-confirm-btn');
+
+function openGdriveModal() {
+  gdrivePasswordInput.value = '';
+  gdrivePasswordError.style.display = 'none';
+  gdriveOverlay.classList.add('open');
+  gdriveModal.classList.add('open');
+  setTimeout(() => gdrivePasswordInput.focus(), 150);
+}
+
+function closeGdriveModal() {
+  gdriveOverlay.classList.remove('open');
+  gdriveModal.classList.remove('open');
+}
+
+function checkGdrivePassword() {
+  const entered = gdrivePasswordInput.value.trim();
+  if (entered === GDRIVE_PASSWORD) {
+    closeGdriveModal();
+    window.open(GDRIVE_FOLDER_LINK, '_blank', 'noopener');
+  } else {
+    gdrivePasswordError.style.display = 'block';
+    gdrivePasswordInput.value = '';
+    gdrivePasswordInput.focus();
+  }
+}
+
+gdriveBtn.addEventListener('click', openGdriveModal);
+gdriveCancelBtn.addEventListener('click', closeGdriveModal);
+gdriveOverlay.addEventListener('click', closeGdriveModal);
+gdriveConfirmBtn.addEventListener('click', checkGdrivePassword);
+gdrivePasswordInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    checkGdrivePassword();
+  }
+});
+gdrivePasswordInput.addEventListener('input', () => {
+  gdrivePasswordError.style.display = 'none';
 });
 
 // ─────────────────────────────────────────────
