@@ -615,6 +615,10 @@
     .doc-btn.delete { border: 1.5px solid var(--red); background: var(--red-bg); color: var(--red); }
     .doc-export-row { display: flex; gap: 8px; }
     .doc-export-row .doc-btn { flex: 1; }
+    .doc-btn.backup { border: 1.5px solid var(--accent-mid); background: var(--accent-light); color: var(--accent); }
+
+    #docs-toolbar { display: flex; gap: 8px; margin-bottom: 10px; }
+    #docs-toolbar .doc-btn { flex: 1; height: 44px; font-size: 13px; }
 
     #fullscreen-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 300;
@@ -775,6 +779,10 @@
     </div>
 
     <div class="tab-panel" id="docs-panel">
+      <div id="docs-toolbar">
+        <button class="doc-btn backup" id="docs-restore-btn">📥 Backup-u geri yüklə</button>
+        <input type="file" id="docs-restore-input" accept="application/json,.json" style="display:none">
+      </div>
       <div class="empty-state" id="docs-empty">
         <div class="es-icon">🧾</div><h3>Sənəd yoxdur</h3><p>Səbətdən yerdəyişmə sənədi hazırladıqda burada görünəcək.</p>
       </div>
@@ -842,6 +850,9 @@
   <div class="modal-body"><div id="doc-modal-items"></div></div>
   <div class="doc-modal-actions">
     <button class="doc-btn save" id="doc-save-btn">💾 Dəyişiklikləri yadda saxla</button>
+    <div class="doc-export-row">
+      <button class="doc-btn backup" id="doc-backup-btn">📤 JSON backup</button>
+    </div>
     <div class="doc-export-row">
       <button class="doc-btn export" id="doc-export-with-btn">🖼️ Excel (şəkilli)</button>
       <button class="doc-btn export" id="doc-export-without-btn">📋 Excel (şəkilsiz)</button>
@@ -1710,6 +1721,61 @@ document.getElementById('doc-delete-btn').addEventListener('click', async () => 
     closeDocModal();
   } catch (e) {
     showToast('⚠️ Xəta: ' + e.message);
+  }
+});
+
+// Tək-tək sənəd JSON backup + geri yükləmə (mövcud sənədləri silmədən)
+function backupDocFileName(doc) {
+  const dt = new Date(doc.createdAt || Date.now());
+  return `yerdeyisme_${dt.getFullYear()}${String(dt.getMonth()+1).padStart(2,'0')}${String(dt.getDate()).padStart(2,'0')}_${doc.id}.json`;
+}
+function backupDocAsJson(doc) {
+  if (!doc) return;
+  try {
+    const data = JSON.stringify(doc, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = backupDocFileName(doc);
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast('✅ Sənəd JSON olaraq yükləndi');
+  } catch (e) {
+    showToast('⚠️ Backup xətası: ' + e.message);
+  }
+}
+document.getElementById('doc-backup-btn').addEventListener('click', () => backupDocAsJson(currentDoc));
+
+document.getElementById('docs-restore-btn').addEventListener('click', () => {
+  document.getElementById('docs-restore-input').click();
+});
+document.getElementById('docs-restore-input').addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const obj = JSON.parse(text);
+    if (!obj || typeof obj !== 'object' || !Array.isArray(obj.items) || !obj.from || !obj.to) {
+      showToast('⚠️ Fayl formatı düzgün deyil');
+      return;
+    }
+    const rec = {
+      createdAt: obj.createdAt || Date.now(),
+      from: obj.from,
+      to: obj.to,
+      items: obj.items,
+    };
+    if (obj.updatedAt) rec.updatedAt = obj.updatedAt;
+    await tdbAdd(rec); // yeni id ilə əlavə olunur, mövcud sənədlərə toxunulmur
+    await refreshDocs();
+    showToast('✅ Sənəd geri yükləndi (yeni sənəd kimi əlavə olundu)');
+  } catch (err) {
+    showToast('⚠️ Fayl oxunmadı: ' + err.message);
+  } finally {
+    e.target.value = '';
   }
 });
 
