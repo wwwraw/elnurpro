@@ -955,7 +955,7 @@
   <!-- TABS -->
   <div id="tabs">
     <button class="tab-btn active" data-tab="catalog">
-      <span class="tab-icon">🔍</span>
+      <span class="tab-icon">📦</span>
       <span>Kataloq</span>
     </button>
     <button class="tab-btn" data-tab="cart">
@@ -1224,7 +1224,7 @@
   <!-- TABS -->
   <div id="s-tabs">
     <button class="tab-btn active" data-tab="s-catalog">
-      <span class="tab-icon">🔍</span>
+      <span class="tab-icon">📦</span>
       <span>Kataloq</span>
     </button>
     <button class="tab-btn" data-tab="s-filter">
@@ -1338,9 +1338,9 @@
           <div class="info-field">
             <label class="info-label">Sıralama</label>
             <select class="qm-price-select" id="sf-sort-field" style="margin-bottom:8px">
-              <option value="name">1. Ada görə</option>
-              <option value="price">2. Qiymətə görə</option>
-              <option value="stock">3. Stoka görə</option>
+              <option value="name">Ada görə</option>
+              <option value="price">Qiymətə görə</option>
+              <option value="stock">Stoka görə</option>
             </select>
             <div class="seg-control" id="sf-sort-dir-seg">
               <button type="button" class="seg-btn active" data-dir="asc">⬆ Azdan-çoxa</button>
@@ -3871,8 +3871,8 @@ function getSupplierOrderPrintHTML(o, withImages) {
       <td>${esc(item.barkod)||'—'}</td>
       <td>${esc(item.ad)||'—'}</td>
       <td>${item.qty} ${esc(item.unit||'əd.')}</td>
-      <td>${numFmt(item.alishQiymeti||item.price)}</td>
-      <td><strong>${numFmt(item.lineTotal != null ? item.lineTotal : (item.qty * (item.alishQiymeti||item.price||0)))}</strong></td>
+      <td>${numFmt(item.price)}</td>
+      <td><strong>${numFmt(item.lineTotal != null ? item.lineTotal : (item.qty * (item.price||0)))}</strong></td>
       <td>${esc(item.note||'')}</td>
     </tr>
   `;
@@ -3911,7 +3911,7 @@ function getSupplierOrderPrintHTML(o, withImages) {
     </div>
     ${o.orderNote ? `<div style="background:#fff3cd;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px"><b>Qeyd:</b> ${esc(o.orderNote)}</div>` : ''}
     <table>
-      <thead><tr><th>#</th>${withImages?'<th>Şəkil</th>':''}<th>Barkod</th><th>Ad</th><th>Miqdar</th><th>Alış qiyməti</th><th>Cəmi məbləğ</th><th>Qeyd</th></tr></thead>
+      <thead><tr><th>#</th>${withImages?'<th>Şəkil</th>':''}<th>Barkod</th><th>Ad</th><th>Miqdar</th><th>Qiymət</th><th>Cəmi məbləğ</th><th>Qeyd</th></tr></thead>
       <tbody>${itemsHtml}</tbody>
     </table>
     <div class="grand-total-wrap">
@@ -3947,8 +3947,8 @@ function shareSupplierViaWhatsApp(o) {
       textContent += `${idx+1}. *${item.ad || '(adsız)'}*\n`;
       textContent += `   Barkod: ${item.barkod||'—'}\n`;
       textContent += `   Miqdar: ${item.qty} ${item.unit||'əd.'}\n`;
-      textContent += `   Alış qiyməti: ${numFmt(item.alishQiymeti||item.price)}\n`;
-      textContent += `   Cəmi məbləğ: ${numFmt(item.lineTotal != null ? item.lineTotal : (item.qty * (item.alishQiymeti||item.price||0)))}\n`;
+      textContent += `   Qiymət: ${numFmt(item.price)}\n`;
+      textContent += `   Cəmi məbləğ: ${numFmt(item.lineTotal != null ? item.lineTotal : (item.qty * (item.price||0)))}\n`;
       if (item.note) textContent += `   📝 ${item.note}\n`;
     });
     textContent += `\n━━━━━━━━━━━━━━━━\n`;
@@ -3977,11 +3977,11 @@ function exportSupplierOrderToXlsx(o, withImages) {
 
 function exportSupplierOrderToXlsxPlain(o) {
   if (window._xlsxFailed || typeof XLSX === 'undefined') { showToast('⚠️ XLSX kitabxanası yüklənməyib'); return; }
-  const headers = ['#','Barkod','Ad','Miqdar','Alış qiyməti (₼)','Cəmi məbləğ (₼)','Qeyd'];
+  const headers = ['#','Barkod','Ad','Miqdar','Qiymət (₼)','Cəmi məbləğ (₼)','Qeyd'];
   const rows = o.items.map((item, idx) => [
     idx+1, item.barkod||'', item.ad||'', `${item.qty} ${item.unit||'əd.'}`,
-    item.alishQiymeti||item.price||0,
-    item.lineTotal != null ? item.lineTotal : (item.qty * (item.alishQiymeti||item.price||0)),
+    item.price||0,
+    item.lineTotal != null ? item.lineTotal : (item.qty * (item.price||0)),
     item.note||''
   ]);
   const infoRows = [
@@ -4019,7 +4019,7 @@ async function exportSupplierOrderToXlsxWithImages(o) {
       { header: 'Barkod', key: 'barkod', width: 18 },
       { header: 'Ad', key: 'ad', width: 34 },
       { header: 'Miqdar', key: 'qty', width: 12 },
-      { header: 'Alış qiyməti (₼)', key: 'price', width: 16 },
+      { header: 'Qiymət (₼)', key: 'price', width: 16 },
       { header: 'Cəmi məbləğ (₼)', key: 'total', width: 16 },
       { header: 'Qeyd', key: 'note', width: 32 },
     ];
@@ -4029,8 +4029,8 @@ async function exportSupplierOrderToXlsxWithImages(o) {
     for (let i = 0; i < o.items.length; i++) {
       const item = o.items[i];
       const rowNum = i + 2;
-      const lineTotal = item.lineTotal != null ? item.lineTotal : (item.qty * (item.alishQiymeti||item.price||0));
-      ws.addRow({ idx: i+1, img: '', barkod: item.barkod||'', ad: item.ad||'', qty: `${item.qty} ${item.unit||'əd.'}`, price: item.alishQiymeti||item.price||0, total: lineTotal, note: item.note||'' });
+      const lineTotal = item.lineTotal != null ? item.lineTotal : (item.qty * (item.price||0));
+      ws.addRow({ idx: i+1, img: '', barkod: item.barkod||'', ad: item.ad||'', qty: `${item.qty} ${item.unit||'əd.'}`, price: item.price||0, total: lineTotal, note: item.note||'' });
       ws.getRow(rowNum).height = 46;
 
       const imgKey = (item.artikul||'').toLowerCase();
