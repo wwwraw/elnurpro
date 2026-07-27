@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRO Azərbaycan Çevirici</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Segoe UI, sans-serif;
+    background:#111827;
+    color:white;
+    text-align:center;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+    padding:30px;
+}
+
+h1{
+    margin-bottom:20px;
+}
+
+textarea{
+    width:100%;
+    height:150px;
+    padding:15px;
+    font-size:18px;
+    border-radius:10px;
+    border:none;
+    margin-bottom:15px;
+    resize:vertical;
+}
+
+.output{
+    background:#1f2937;
+    padding:15px;
+    border-radius:10px;
+    min-height:60px;
+    font-size:20px;
+    font-weight:bold;
+    margin-top:10px;
+    word-wrap:break-word;
+}
+
+.buttons{
+    margin-top:15px;
+}
+
+button{
+    padding:10px 18px;
+    margin:5px;
+    border:none;
+    border-radius:8px;
+    font-size:15px;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.copy{background:#22c55e;color:white;}
+.clear{background:#ef4444;color:white;}
+.download{background:#3b82f6;color:white;}
+.upper{background:#f59e0b;color:white;}
+.lower{background:#6366f1;color:white;}
+.auto{background:#374151;color:white;}
+
+button:hover{
+    opacity:0.8;
+}
+
+.stats{
+    margin-top:15px;
+    font-size:14px;
+    color:#9ca3af;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🔥 PRO Azərbaycan → İngilis Çevirici</h1>
+
+<textarea id="inputText" placeholder="Buraya yaz..."></textarea>
+
+<div class="buttons">
+<button class="copy" onclick="copyText()">Kopyala</button>
+<button class="clear" onclick="clearText()">Təmizlə</button>
+<button class="download" onclick="downloadText()">TXT Yüklə</button>
+<button class="upper" onclick="forceUpper()">BÖYÜK ET</button>
+<button class="lower" onclick="forceLower()">kiçik et</button>
+<button class="auto" onclick="toggleAuto()">Auto: ON/OFF</button>
+</div>
+
+<div class="output" id="outputText"></div>
+
+<div class="stats" id="stats"></div>
+
+</div>
+
+<script>
+
+let autoMode = true;
+
+const map = {
+"ə":"e","Ə":"E",
+"ı":"i","I":"I",
+"ö":"o","Ö":"O",
+"ü":"u","Ü":"U",
+"ğ":"g","Ğ":"G",
+"ş":"s","Ş":"S",
+"ç":"c","Ç":"C",
+"İ":"I"
+};
+
+document.getElementById("inputText").addEventListener("input", function(){
+    if(autoMode){
+        convertText();
+    }
+});
+
+function convertText(){
+    let text = document.getElementById("inputText").value;
+
+    let result = text.split("").map(c => map[c] || c).join("");
+    result = result.toUpperCase();
+
+    document.getElementById("outputText").innerText = result;
+
+    updateStats(result);
+}
+
+function updateStats(text){
+    let charCount = text.length;
+    let lineCount = text.split("\n").length;
+    document.getElementById("stats").innerText =
+        "Simvol sayı: " + charCount + " | Sətir sayı: " + lineCount;
+}
+
+function copyText(){
+    let output = document.getElementById("outputText").innerText;
+    if(output.trim()==="") return;
+
+    navigator.clipboard.writeText(output);
+
+    let btn = document.querySelector(".copy");
+    btn.style.background="#16a34a";
+    setTimeout(()=>{btn.style.background="#22c55e";},800);
+}
+
+function clearText(){
+    document.getElementById("inputText").value="";
+    document.getElementById("outputText").innerText="";
+    document.getElementById("stats").innerText="";
+}
+
+function downloadText(){
+    let text = document.getElementById("outputText").innerText;
+    if(text.trim()==="") return;
+
+    let blob = new Blob([text], {type:"text/plain"});
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "converted.txt";
+    a.click();
+}
+
+function forceUpper(){
+    let text = document.getElementById("outputText").innerText;
+    document.getElementById("outputText").innerText = text.toUpperCase();
+}
+
+function forceLower(){
+    let text = document.getElementById("outputText").innerText;
+    document.getElementById("outputText").innerText = text.toLowerCase();
+}
+
+function toggleAuto(){
+    autoMode = !autoMode;
+    alert("Auto Mode: " + (autoMode ? "ON" : "OFF"));
+}
+
+</script>
+
+</body>
+</html>

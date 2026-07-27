@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Şəkil Excel Match Sistemi - Pro v3.4</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --table-border: #1e3a8a;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding: 12px;
+            font-size: 13px;
+        }
+
+        /* ===== Compact header ===== */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            background: var(--card-bg);
+            padding: 10px 16px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.06);
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .logo-area h1 {
+            font-size: 16px;
+            color: var(--primary);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-area p {
+            color: var(--text-muted);
+            margin-top: 2px;
+            font-size: 11px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 8px;
+        }
+
+        .stat-card {
+            background: var(--bg-main);
+            padding: 5px 12px;
+            border-radius: 6px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+            min-width: 64px;
+        }
+
+        .stat-card span {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+
+        .stat-card label {
+            font-size: 9px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .btn-about {
+            background: var(--bg-main);
+            color: var(--primary);
+            border: 1px solid #cbd5e1;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+
+        .btn-about:hover {
+            background: #eff6ff;
+            border-color: var(--primary);
+        }
+
+        /* ===== Compact upload panels ===== */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .panel-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 12px 14px;
+            box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.06);
+        }
+
+        .panel-title {
+            font-size: 12.5px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #334155;
+        }
+
+        .upload-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8fafc;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        .upload-zone i {
+            font-size: 20px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .upload-zone p {
+            font-size: 12px;
+        }
+
+        .file-input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .status-msg {
+            margin-top: 6px;
+            font-size: 11.5px;
+            font-weight: 500;
+        }
+
+        .status-msg.success { color: var(--success); }
+        .status-msg.error { color: var(--danger); }
+
+        /* ===== Compact toolbar ===== */
+        .toolbar {
+            background: var(--card-bg);
+            padding: 10px 14px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.06);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            font-size: 12px;
+        }
+
+        .btn-excel { background: #16a34a; color: white; }
+        .btn-excel:hover { background: #15803d; }
+        .btn-pdf { background: #dc2626; color: white; }
+        .btn-pdf:hover { background: #b91c1c; }
+
+        .col-toggle-panel {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            background: #f1f5f9;
+            padding: 7px 10px;
+            border-radius: 6px;
+            width: 100%;
+            border: 1px solid #e2e8f0;
+        }
+
+        .col-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 500;
+            color: #475569;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .col-checkbox input {
+            width: 12px;
+            height: 12px;
+        }
+
+        /* ===== Table — UNCHANGED from the original ===== */
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+            overflow-x: auto;
+            overflow-y: clip;
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            table-layout: fixed;
+            border: 1px solid var(--table-border);
+        }
+
+        th {
+            background: #1e3a8a;
+            color: white;
+            font-weight: 600;
+            padding: 12px 8px;
+            font-size: 13px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-right: 1px solid var(--table-border);
+            border-bottom: 1px solid var(--table-border);
+        }
+
+        th .sort-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding-bottom: 6px;
+        }
+
+        th .filter-input {
+            width: 100%;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+            font-size: 11px;
+            color: #1e293b;
+        }
+
+        .resizer {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 5px;
+            background: rgba(0,0,0,0.1);
+            cursor: col-resize;
+        }
+
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--table-border);
+            border-right: 1px solid var(--table-border);
+            vertical-align: middle;
+            word-wrap: break-word;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .cell-img {
+            max-width: 60px;
+            max-height: 60px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 0;
+            border: none;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .cell-textarea {
+            width: 100%;
+            height: 45px;
+            padding: 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            resize: none;
+            font-size: 12px;
+        }
+
+        .btn-delete {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 6px;
+        }
+
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .lightbox-content {
+            max-width: 85%;
+            max-height: 85%;
+            border-radius: 8px;
+        }
+
+        .lightbox-btn {
+            position: absolute;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            font-size: 24px;
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox-close { top: 24px; right: 24px; }
+        .lightbox-prev { left: 24px; }
+        .lightbox-next { right: 24px; }
+
+        .lightbox-caption {
+            position: absolute;
+            bottom: 24px;
+            color: white;
+            font-size: 16px;
+            background: rgba(0,0,0,0.6);
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+
+        .hidden { display: none !important; }
+
+        /* ===== About modal ===== */
+        .about-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            z-index: 1100;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 16px;
+            overflow-y: auto;
+        }
+
+        .about-overlay.open { display: flex; }
+
+        .about-modal {
+            background: var(--card-bg);
+            border-radius: 12px;
+            max-width: 640px;
+            width: 100%;
+            padding: 24px 28px 28px;
+            box-shadow: 0 20px 40px -8px rgb(0 0 0 / 0.3);
+            position: relative;
+        }
+
+        .about-modal h2 {
+            color: var(--primary);
+            font-size: 19px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .about-modal .about-sub {
+            color: var(--text-muted);
+            font-size: 12px;
+            margin-bottom: 18px;
+        }
+
+        .about-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: #f1f5f9;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .about-close:hover { background: #e2e8f0; color: var(--text-main); }
+
+        .about-modal h3 {
+            font-size: 13.5px;
+            color: #1e3a8a;
+            margin-top: 18px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .about-modal p, .about-modal li {
+            font-size: 12.5px;
+            line-height: 1.6;
+            color: #334155;
+        }
+
+        .about-modal ol, .about-modal ul {
+            margin-left: 18px;
+            margin-bottom: 4px;
+        }
+
+        .about-modal .col-map {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 4px 10px;
+            font-size: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .about-modal .col-map .k {
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+
+        .about-modal .note-box {
+            background: #fff7ed;
+            border: 1px solid #fed7aa;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 12px;
+            color: #9a3412;
+            margin-top: 12px;
+            display: flex;
+            gap: 8px;
+        }
+
+        @media print {
+            th, td {
+                border: 1px solid #1e3a8a !important;
+                color: #000000 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <h1><i class="fa-solid fa-images"></i> Şəkil Excel Match Sistemi</h1>
+            <p>Ağıllı çarpaz müqayisə və hesabat idarəetmə paneli</p>
+        </div>
+        <div class="header-right">
+            <div class="stats">
+                <div class="stat-card">
+                    <span id="stat-excel-rows">0</span>
+                    <label>Excel Sətir</label>
+                </div>
+                <div class="stat-card">
+                    <span id="stat-matched">0</span>
+                    <label>Eyniləşən</label>
+                </div>
+            </div>
+            <button class="btn-about" onclick="openAbout()"><i class="fa-solid fa-circle-info"></i> Haqqında</button>
+        </div>
+    </header>
+
+    <div class="grid-container">
+        <div class="panel-card">
+            <div class="panel-title"><i class="fa-solid fa-file-excel" style="color: #16a34a;"></i> 1. Excel Verilənlər Bazası (.xlsx, .xls)</div>
+            <div class="upload-zone" id="excel-zone">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <p>Excel faylını bura sürükləyin və ya klikləyin</p>
+                <input type="file" id="excel-input" class="file-input" accept=".xlsx, .xls">
+                <div id="excel-status" class="status-msg"></div>
+            </div>
+        </div>
+
+        <div class="panel-card">
+            <div class="panel-title"><i class="fa-solid fa-image" style="color: #2563eb;"></i> 2. Məhsul Şəkilləri (Çoxlu Seçim)</div>
+            <div class="upload-zone" id="image-zone">
+                <i class="fa-solid fa-folder-open"></i>
+                <p>Şəkilləri bura sürüşdürün və ya klikləyin</p>
+                <input type="file" id="image-input" class="file-input" accept="image/*" multiple>
+                <div id="image-status" class="status-msg"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <div class="action-btns">
+            <button class="btn btn-excel" onclick="exportToExcel()"><i class="fa-solid fa-file-arrow-down"></i> Excel Download</button>
+            <button class="btn btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> PDF Download</button>
+        </div>
+        <div class="col-toggle-panel" id="col-toggle-panel"></div>
+    </div>
+
+    <div class="table-container">
+        <table id="main-table">
+            <thead>
+                <tr id="header-row"></tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+        </table>
+    </div>
+
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-btn lightbox-close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></button>
+        <button class="lightbox-btn lightbox-prev" onclick="prevLightbox()"><i class="fa-solid fa-chevron-left"></i></button>
+        <img src="" alt="Preview" class="lightbox-content" id="lightbox-img">
+        <button class="lightbox-btn lightbox-next" onclick="nextLightbox()"><i class="fa-solid fa-chevron-right"></i></button>
+        <div class="lightbox-caption" id="lightbox-caption"></div>
+    </div>
+
+    <!-- ===== About / Haqqında modal ===== -->
+    <div class="about-overlay" id="about-overlay">
+        <div class="about-modal">
+            <button class="about-close" onclick="closeAbout()"><i class="fa-solid fa-xmark"></i></button>
+            <h2><i class="fa-solid fa-circle-info"></i> Proqram Haqqında</h2>
+            <p class="about-sub">Şəkil Excel Match Sistemi — Pro v3.4</p>
+
+            <h3><i class="fa-solid fa-bullseye"></i> Nə üçündür?</h3>
+            <p>
+                Bu vasitə anbar/məhsul şəkillərini Excel bazasındakı məlumatlarla (artikul, barkod,
+                anbar qalıqları, alış/satış qiyməti və s.) avtomatik eyniləşdirir. Şəkilin fayl adı
+                Excel-dəki "Artikul" sütunu ilə üst-üstə düşdükdə, həmin sətirin bütün məlumatları
+                avtomatik olaraq cədvələ əlavə olunur. Nəticə cədvəlini istənilən vaxt Excel və ya
+                PDF formatında yükləmək mümkündür.
+            </p>
+
+            <h3><i class="fa-solid fa-list-ol"></i> Necə istifadə etməli?</h3>
+            <ol>
+                <li><b>Excel yükləyin:</b> "1. Excel Verilənlər Bazası" bölməsinə .xlsx/.xls faylını sürükləyin və ya klikləyib seçin.</li>
+                <li><b>Şəkilləri yükləyin:</b> "2. Məhsul Şəkilləri" bölməsinə bir və ya bir neçə şəkli əlavə edin. Hər şəklin fayl adı (uzantısız) Excel-dəki artikul dəyəri ilə eyni olmalıdır (böyük/kiçik hərf fərqi önəmli deyil).</li>
+                <li><b>Yoxlayın:</b> Cədvəldə uyğun gələn sətirlər avtomatik doldurulur. Yuxarı sağdakı "Eyniləşən" göstəricisi neçə şəklin bazada tapıldığını göstərir.</li>
+                <li><b>Süzgəc və sıralama:</b> Sütun başlıqlarındakı axtarış qutularından istifadə edərək süzün, sütun adına klikləyərək sıralayın.</li>
+                <li><b>Sütunları idarə edin:</b> Alt paneldəki qutucuqlarla lazım olmayan sütunları gizlədin (yalnız görünüşə təsir edir, məlumat silinmir).</li>
+                <li><b>Qeyd yazın / sətir silin:</b> "QEYD" xanasına qeyd əlavə edə, "SİL" düyməsi ilə lazımsız sətri cədvəldən çıxara bilərsiniz.</li>
+                <li><b>Yükləyin:</b> Hazır olduqda "Excel Download" və ya "PDF Download" düymələri ilə hesabatı öz kompüterinizə saxlayın.</li>
+            </ol>
+
+            <h3><i class="fa-solid fa-table-columns"></i> Excel faylı hansı formatda olmalıdır?</h3>
+            <p>Sistem yüklənən Excel faylında 1-ci sətri başlıq kimi qəbul edir və məlumatı aşağıdakı sütunlardan oxuyur:</p>
+            <div class="col-map">
+                <span class="k">B sütunu</span><span>Məhsulun adı</span>
+                <span class="k">E sütunu</span><span>Barcode</span>
+                <span class="k">F sütunu</span><span>Artikul (şəkil fayl adı ilə eyni olmalıdır)</span>
+                <span class="k">I sütunu</span><span>Saxlanma yeri</span>
+                <span class="k">K sütunu</span><span>QARAYEV ANBAR</span>
+                <span class="k">L sütunu</span><span>RAZIN ANBAR</span>
+                <span class="k">M sütunu</span><span>ƏSAS ANBAR</span>
+                <span class="k">O sütunu</span><span>ALIŞ qiyməti</span>
+                <span class="k">Q sütunu</span><span>SATIŞ qiyməti</span>
+            </div>
+            <div class="note-box">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span>Diqqət: əgər sizin Excel faylınızda sütunların yeri fərqlidirsə, uyğunlaşma düzgün işləməyəcək — sütunları yuxarıdakı sıra ilə düzəldin.</span>
+            </div>
+
+            <h3><i class="fa-solid fa-circle-question"></i> Faydalı məsləhətlər</h3>
+            <ul>
+                <li>Şəkil əlavə edildikdən sonra yeni Excel yüklənsə, mövcud şəkillər avtomatik yenidən uyğunlaşdırılır.</li>
+                <li>"Ölçü" sütunu məhsulun fiziki ölçüsü deyil, yüklənən şəkil faylının həcmidir (KB).</li>
+                <li>Sütun eni siçanla sütun kənarından tutub genişləndirilə/daraldıla bilər.</li>
+                <li>Bütün əməliyyatlar brauzerinizdə lokal işləyir — heç bir fayl xarici serverə göndərilmir.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const COLUMNS = [
+            { id: 'srNo', label: '№', width: '50px', sortable: false, filterable: false },
+            { id: 'img', label: 'Şəkil', width: '80px', sortable: false, filterable: false },
+            { id: 'imgName', label: 'Artikul', width: '130px', sortable: true, filterable: true },
+            { id: 'barcode', label: 'Barcode', width: '130px', sortable: true, filterable: true },
+            { id: 'prodName', label: 'Məhsulun adı', width: '180px', sortable: true, filterable: true },
+            { id: 'location', label: 'Saxlanma yeri', width: '140px', sortable: true, filterable: true },
+            { id: 'anbarQarayev', label: 'QARAYEV ANBAR', width: '130px', sortable: true, filterable: true },
+            { id: 'anbarRazin', label: 'RAZIN ANBAR', width: '130px', sortable: true, filterable: true },
+            { id: 'anbarEsas', label: 'ƏSAS ANBAR', width: '130px', sortable: true, filterable: true },
+            { id: 'alis', label: 'ALIŞ', width: '100px', sortable: true, filterable: true },
+            { id: 'satis', label: 'SATIŞ', width: '100px', sortable: true, filterable: true },
+            { id: 'size', label: 'Ölçü', width: '90px', sortable: true, filterable: true },
+            { id: 'note', label: 'QEYD', width: '160px', sortable: false, filterable: true },
+            { id: 'actions', label: 'SİL', width: '60px', sortable: false, filterable: false }
+        ];
+
+        let excelDatabase = {};
+        let matchedRecords = [];
+        let filters = {};
+        let currentSort = { field: null, order: 'asc' };
+        let activeLightboxIndex = -1;
+        let columnVisibility = {};
+        let startX, startWidth, resizingTh;
+
+        // Fallback UUID generator: crypto.randomUUID() needs a secure context
+        // (https/localhost). If it's unavailable (e.g. some setups when the
+        // file is opened directly), fall back to a manual generator so the
+        // app never breaks when adding images.
+        function generateId() {
+            if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+                try {
+                    return window.crypto.randomUUID();
+                } catch (e) {
+                    // fall through to manual generator
+                }
+            }
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initLocalStorage();
+            buildHeader();
+            buildColumnToggler();
+            setupDragAndDrop();
+            setupKeyboardListeners();
+            setupAboutListeners();
+        });
+
+        function initLocalStorage() {
+            let savedVisibility = null;
+            try {
+                savedVisibility = localStorage.getItem('matchSystem_colVisibility');
+            } catch (e) {
+                savedVisibility = null;
+            }
+
+            if (savedVisibility) {
+                try {
+                    columnVisibility = JSON.parse(savedVisibility);
+                    if (!columnVisibility || typeof columnVisibility !== 'object') {
+                        throw new Error('invalid stored value');
+                    }
+                } catch (e) {
+                    columnVisibility = {};
+                    COLUMNS.forEach(c => columnVisibility[c.id] = true);
+                }
+                COLUMNS.forEach(c => {
+                    if (columnVisibility[c.id] === undefined) columnVisibility[c.id] = true;
+                });
+            } else {
+                COLUMNS.forEach(c => columnVisibility[c.id] = true);
+            }
+        }
+
+        function buildHeader() {
+            const headerRow = document.getElementById('header-row');
+            headerRow.innerHTML = '';
+
+            COLUMNS.forEach((col) => {
+                const th = document.createElement('th');
+                th.style.width = col.width;
+                th.setAttribute('data-id', col.id);
+                if (!columnVisibility[col.id]) th.classList.add('hidden');
+
+                const topDiv = document.createElement('div');
+                topDiv.className = 'sort-container';
+                if (col.sortable) topDiv.onclick = () => handleSort(col.id);
+
+                const labelSpan = document.createElement('span');
+                labelSpan.textContent = col.label;
+                topDiv.appendChild(labelSpan);
+
+                if (col.sortable) {
+                    const indicator = document.createElement('span');
+                    indicator.id = `sort-icon-${col.id}`;
+                    indicator.innerHTML = ' <i class="fa-solid fa-sort" style="opacity: 0.4;"></i>';
+                    topDiv.appendChild(indicator);
+                }
+                th.appendChild(topDiv);
+
+                if (col.filterable) {
+                    const filterInput = document.createElement('input');
+                    filterInput.className = 'filter-input';
+                    filterInput.placeholder = 'Axtar...';
+                    filterInput.value = filters[col.id] || '';
+                    filterInput.oninput = (e) => handleFilter(col.id, e.target.value);
+                    th.appendChild(filterInput);
+                } else {
+                    const blank = document.createElement('div');
+                    blank.style.height = '21px';
+                    th.appendChild(blank);
+                }
+
+                const resizer = document.createElement('div');
+                resizer.className = 'resizer';
+                resizer.addEventListener('mousedown', initResize);
+                th.appendChild(resizer);
+
+                headerRow.appendChild(th);
+            });
+        }
+
+        function buildColumnToggler() {
+            const panel = document.getElementById('col-toggle-panel');
+            panel.innerHTML = '';
+            COLUMNS.forEach(col => {
+                const label = document.createElement('label');
+                label.className = 'col-checkbox';
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = columnVisibility[col.id];
+                checkbox.onchange = () => toggleColumn(col.id, checkbox.checked);
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(col.label));
+                panel.appendChild(label);
+            });
+        }
+
+        function toggleColumn(colId, isVisible) {
+            columnVisibility[colId] = isVisible;
+            try {
+                localStorage.setItem('matchSystem_colVisibility', JSON.stringify(columnVisibility));
+            } catch (e) {
+                // Storage unavailable (private mode / quota) — safe to ignore,
+                // visibility just won't persist across reloads.
+            }
+            buildHeader();
+            renderTable();
+            updateSortIndicators();
+        }
+
+        function initResize(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            resizingTh = e.target.parentElement;
+            startX = e.clientX;
+            startWidth = resizingTh.offsetWidth;
+            document.addEventListener('mousemove', doResize);
+            document.addEventListener('mouseup', stopResize);
+        }
+
+        function doResize(e) {
+            if (!resizingTh) return;
+            const newWidth = startWidth + (e.clientX - startX);
+            if (newWidth > 30) {
+                resizingTh.style.width = newWidth + 'px';
+                const colId = resizingTh.getAttribute('data-id');
+                const col = COLUMNS.find(c => c.id === colId);
+                if (col) col.width = newWidth + 'px';
+            }
+        }
+
+        function stopResize() {
+            document.removeEventListener('mousemove', doResize);
+            document.removeEventListener('mouseup', stopResize);
+            resizingTh = null;
+        }
+
+        function setupDragAndDrop() {
+            ['excel-zone', 'image-zone'].forEach(id => {
+                const zone = document.getElementById(id);
+                zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+                zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    const input = zone.querySelector('.file-input');
+                    if (files.length > 0) {
+                        input.files = files;
+                        input.dispatchEvent(new Event('change'));
+                    }
+                });
+            });
+            document.getElementById('excel-input').addEventListener('change', handleExcelFile);
+            document.getElementById('image-input').addEventListener('change', handleImageFiles);
+        }
+
+        function handleExcelFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const statusDiv = document.getElementById('excel-status');
+            statusDiv.className = 'status-msg';
+            statusDiv.textContent = 'Excel oxunur...';
+
+            const reader = new FileReader();
+            reader.onload = function (evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                    excelDatabase = {};
+                    let rowCount = 0;
+
+                    for (let i = 1; i < rows.length; i++) {
+                        const row = rows[i];
+                        if (!row || row.length === 0) continue;
+
+                        const barcode = row[4] || ''; // 5-ci sütun
+                        const imgNameRaw = row[5];    // 6-cı sütun (Artikul)
+
+                        if (!imgNameRaw) continue;
+
+                        const imgNameClean = String(imgNameRaw).trim().toLowerCase();
+                        if (imgNameClean === '') continue;
+
+                        excelDatabase[imgNameClean] = {
+                            barcode: barcode,
+                            prodName: row[1] || '',
+                            location: row[8] || '',
+                            anbarQarayev: row[10] || '',
+                            anbarRazin: row[11] || '',
+                            anbarEsas: row[12] || '',
+                            alis: row[14] || '',
+                            satis: row[16] || ''
+                        };
+
+                        rowCount++;
+                    }
+
+                    document.getElementById('stat-excel-rows').textContent = rowCount;
+
+                    if (rowCount === 0) {
+                        statusDiv.className = 'status-msg error';
+                        statusDiv.textContent = 'Faylda uyğun sətir tapılmadı. Sütun sırasını yoxlayın (bax: Haqqında).';
+                    } else {
+                        statusDiv.className = 'status-msg success';
+                        statusDiv.textContent = `Uğurla yükləndi! ${rowCount} sətir bazaya alındı.`;
+                    }
+
+                    reMatchExistingImages();
+
+                } catch (err) {
+                    statusDiv.className = 'status-msg error';
+                    statusDiv.textContent = 'Fayl oxunarkən xəta baş verdi!';
+                    console.error(err);
+                }
+            };
+            reader.onerror = function () {
+                statusDiv.className = 'status-msg error';
+                statusDiv.textContent = 'Fayl oxunarkən xəta baş verdi!';
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        async function handleImageFiles(e) {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+
+            const statusDiv = document.getElementById('image-status');
+            statusDiv.className = 'status-msg';
+            statusDiv.textContent = 'Şəkillər emal olunur...';
+
+            let addedCount = 0;
+            let skippedCount = 0;
+
+            for (const file of files) {
+
+                if (!file.type.startsWith('image/')) {
+                    skippedCount++;
+                    continue;
+                }
+
+                const fullName = file.name;
+                const lastDotIdx = fullName.lastIndexOf('.');
+                const nameWithoutExt = lastDotIdx !== -1 ? fullName.substring(0, lastDotIdx) : fullName;
+
+                const sizeStr = (file.size / 1024).toFixed(1) + ' KB';
+
+                let imgData;
+                try {
+                    imgData = await readImageAsDataURL(file);
+                } catch (err) {
+                    console.error('Şəkil oxunmadı:', fullName, err);
+                    skippedCount++;
+                    continue;
+                }
+
+                const matchKey = nameWithoutExt.trim().toLowerCase();
+
+                const excelMatch = excelDatabase[matchKey] || {
+                    barcode: '',
+                    prodName: '',
+                    location: '',
+                    anbarQarayev: '',
+                    anbarRazin: '',
+                    anbarEsas: '',
+                    alis: '',
+                    satis: ''
+                };
+
+                matchedRecords.push({
+                    id: generateId(),
+                    imgData: imgData,
+                    imgName: nameWithoutExt,
+                    matchKey: matchKey,
+                    barcode: excelMatch.barcode,
+                    prodName: excelMatch.prodName,
+                    location: excelMatch.location,
+                    anbarQarayev: excelMatch.anbarQarayev,
+                    anbarRazin: excelMatch.anbarRazin,
+                    anbarEsas: excelMatch.anbarEsas,
+                    alis: excelMatch.alis,
+                    satis: excelMatch.satis,
+                    size: sizeStr,
+                    note: ''
+                });
+
+                addedCount++;
+            }
+
+            statusDiv.className = skippedCount > 0 && addedCount === 0 ? 'status-msg error' : 'status-msg success';
+            statusDiv.textContent = skippedCount > 0
+                ? `${addedCount} şəkil əlavə edildi, ${skippedCount} fayl şəkil olmadığı üçün keçildi.`
+                : `${addedCount} şəkil prosesə əlavə edildi.`;
+
+            updateStats();
+            renderTable();
+
+            // Allow selecting the very same file(s) again later without
+            // needing to pick a different file first.
+            e.target.value = '';
+        }
+
+        function readImageAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = () => reject(new Error('FileReader error'));
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function reMatchExistingImages() {
+            matchedRecords.forEach(rec => {
+                if (excelDatabase[rec.matchKey]) {
+                    const match = excelDatabase[rec.matchKey];
+                    rec.barcode = match.barcode;
+                    rec.prodName = match.prodName;
+                    rec.location = match.location;
+                    rec.anbarQarayev = match.anbarQarayev;
+                    rec.anbarRazin = match.anbarRazin;
+                    rec.anbarEsas = match.anbarEsas;
+                    rec.alis = match.alis;
+                    rec.satis = match.satis;
+                }
+            });
+
+            renderTable();
+            updateStats();
+        }
+
+        function updateStats() {
+            const matchedCount = matchedRecords.filter(r => r.prodName !== '').length;
+            document.getElementById('stat-matched').textContent = `${matchedCount} / ${matchedRecords.length}`;
+        }
+
+        function handleFilter(colId, val) {
+            if (val.trim() === '') delete filters[colId];
+            else filters[colId] = val.toLowerCase();
+            renderTable();
+        }
+
+        function handleSort(colId) {
+            if (currentSort.field === colId) {
+                currentSort.order = currentSort.order === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.field = colId;
+                currentSort.order = 'asc';
+            }
+
+            updateSortIndicators();
+            renderTable();
+        }
+
+        function updateSortIndicators() {
+            COLUMNS.forEach(col => {
+                if (!col.sortable) return;
+
+                const iconContainer = document.getElementById(`sort-icon-${col.id}`);
+                if (!iconContainer) return;
+
+                if (currentSort.field === col.id) {
+                    iconContainer.innerHTML = currentSort.order === 'asc'
+                        ? ' <i class="fa-solid fa-sort-up" style="color:white;"></i>'
+                        : ' <i class="fa-solid fa-sort-down" style="color:white;"></i>';
+                } else {
+                    iconContainer.innerHTML = ' <i class="fa-solid fa-sort" style="opacity: 0.4;"></i>';
+                }
+            });
+        }
+
+        function getProcessedData() {
+            let result = [...matchedRecords];
+
+            Object.keys(filters).forEach(colId => {
+                const searchStr = filters[colId];
+                result = result.filter(row =>
+                    String(row[colId] || '').toLowerCase().includes(searchStr)
+                );
+            });
+
+            if (currentSort.field) {
+                const field = currentSort.field;
+                const orderMultiplier = currentSort.order === 'asc' ? 1 : -1;
+
+                result.sort((a, b) => {
+                    let valA = a[field];
+                    let valB = b[field];
+
+                    const numA = parseFloat(valA);
+                    const numB = parseFloat(valB);
+
+                    const bothNumeric = valA !== '' && valB !== '' && !isNaN(numA) && !isNaN(numB);
+
+                    if (bothNumeric) {
+                        return (numA - numB) * orderMultiplier;
+                    }
+
+                    return String(valA).localeCompare(String(valB), 'az') * orderMultiplier;
+                });
+            }
+
+            return result;
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+
+            const dataToRender = getProcessedData();
+
+            if (dataToRender.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="${COLUMNS.length}" style="text-align:center; padding:30px; color:var(--text-muted);">
+                            Məlumat tapılmadı.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            dataToRender.forEach((row, viewIndex) => {
+                const tr = document.createElement('tr');
+
+                COLUMNS.forEach(col => {
+                    const td = document.createElement('td');
+                    if (!columnVisibility[col.id]) td.classList.add('hidden');
+
+                    if (col.id === 'srNo') {
+                        td.textContent = viewIndex + 1;
+                        td.style.textAlign = 'center';
+                        td.style.fontWeight = '600';
+
+                    } else if (col.id === 'img') {
+                        const img = document.createElement('img');
+                        img.src = row.imgData;
+                        img.className = 'cell-img';
+                        img.onclick = () => openLightbox(row.id);
+                        td.appendChild(img);
+                        td.style.textAlign = 'center';
+
+                    } else if (col.id === 'note') {
+                        const textarea = document.createElement('textarea');
+                        textarea.className = 'cell-textarea';
+                        textarea.value = row.note;
+
+                        textarea.oninput = (e) => {
+                            row.note = e.target.value;
+                            const idx = matchedRecords.findIndex(r => r.id === row.id);
+                            if (idx !== -1) {
+                                matchedRecords[idx].note = e.target.value;
+                            }
+                        };
+                        td.appendChild(textarea);
+
+                    } else if (col.id === 'actions') {
+                        const btn = document.createElement('button');
+                        btn.className = 'btn-delete';
+                        btn.innerHTML = '<i class="fa-solid fa-trash-can"></i>';
+                        btn.onclick = () => deleteRow(row.id);
+                        td.appendChild(btn);
+                        td.style.textAlign = 'center';
+
+                    } else {
+                        td.textContent = row[col.id] || '';
+                        if (['anbarQarayev', 'anbarRazin', 'anbarEsas', 'alis', 'satis', 'size'].includes(col.id)) {
+                            td.style.textAlign = 'center';
+                        }
+                    }
+
+                    tr.appendChild(td);
+                });
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deleteRow(id) {
+            matchedRecords = matchedRecords.filter(r => r.id !== id);
+            updateStats();
+            renderTable();
+        }
+
+        function openLightbox(id) {
+            const currentData = getProcessedData();
+            activeLightboxIndex = currentData.findIndex(r => r.id === id);
+            if (activeLightboxIndex === -1) return;
+
+            updateLightbox();
+            document.getElementById('lightbox').style.display = 'flex';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').style.display = 'none';
+            activeLightboxIndex = -1;
+        }
+
+        function nextLightbox() {
+            const currentData = getProcessedData();
+            if (activeLightboxIndex < currentData.length - 1) {
+                activeLightboxIndex++;
+                updateLightbox();
+            }
+        }
+
+        function prevLightbox() {
+            if (activeLightboxIndex > 0) {
+                activeLightboxIndex--;
+                updateLightbox();
+            }
+        }
+
+        function updateLightbox() {
+            const currentData = getProcessedData();
+            const item = currentData[activeLightboxIndex];
+            if (!item) return;
+
+            document.getElementById('lightbox-img').src = item.imgData;
+            document.getElementById('lightbox-caption').textContent =
+                `${item.imgName}${item.prodName ? ' - ' + item.prodName : ''}`;
+        }
+
+        function setupKeyboardListeners() {
+            document.addEventListener('keydown', (e) => {
+                const lightbox = document.getElementById('lightbox');
+                if (lightbox.style.display === 'flex') {
+                    if (e.key === 'Escape') closeLightbox();
+                    if (e.key === 'ArrowRight') nextLightbox();
+                    if (e.key === 'ArrowLeft') prevLightbox();
+                    return;
+                }
+
+                const aboutOverlay = document.getElementById('about-overlay');
+                if (aboutOverlay.classList.contains('open') && e.key === 'Escape') {
+                    closeAbout();
+                }
+            });
+        }
+
+        function setupAboutListeners() {
+            const overlay = document.getElementById('about-overlay');
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) closeAbout();
+            });
+        }
+
+        function openAbout() {
+            document.getElementById('about-overlay').classList.add('open');
+        }
+
+        function closeAbout() {
+            document.getElementById('about-overlay').classList.remove('open');
+        }
+
+        async function exportToExcel() {
+            const dataToExport = getProcessedData();
+
+            if (dataToExport.length === 0) {
+                alert('Eksport ediləcək məlumat yoxdur!');
+                return;
+            }
+
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('Match Raporu');
+
+            worksheet.views = [{ showGridLines: true }];
+
+            const visibleCols = COLUMNS.filter(c => columnVisibility[c.id] && c.id !== 'actions');
+
+            worksheet.columns = visibleCols.map((col) => {
+                let maxLen = col.label.length + 5;
+
+                if (col.id === 'img') return { header: col.label, key: col.id, width: 14 };
+                if (col.id === 'srNo') return { header: col.label, key: col.id, width: 8 };
+
+                dataToExport.forEach(item => {
+                    const valLen = String(item[col.id] || '').length;
+                    if (valLen > maxLen) maxLen = valLen;
+                });
+
+                return {
+                    header: col.label,
+                    key: col.id,
+                    width: maxLen > 45 ? 45 : maxLen
+                };
+            });
+
+            const headerRow = worksheet.getRow(1);
+            headerRow.height = 30;
+
+            dataToExport.forEach((item, rIdx) => {
+                const rowData = visibleCols.map((c) => {
+                    if (c.id === 'srNo') return rIdx + 1;
+                    if (c.id === 'img') return '';
+                    return item[c.id] || '';
+                });
+                worksheet.addRow(rowData);
+            });
+
+            worksheet.eachRow({ includeEmpty: true }, function (row, rowNumber) {
+                if (rowNumber === 1) {
+                    row.height = 32;
+                    row.eachCell((cell) => {
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A8A' } };
+                        cell.font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 11 };
+                        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                        cell.border = {
+                            top: { style: 'thin', color: { argb: 'FF1E3A8A' } },
+                            left: { style: 'thin', color: { argb: 'FF1E3A8A' } },
+                            bottom: { style: 'medium', color: { argb: 'FF1E3A8A' } },
+                            right: { style: 'thin', color: { argb: 'FF1E3A8A' } }
+                        };
+                    });
+                } else {
+                    row.height = 65;
+                    row.eachCell({ includeEmpty: true }, (cell) => {
+                        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                        cell.font = { size: 10, color: { argb: 'FF000000' } };
+                        cell.border = {
+                            top: { style: 'thin', color: { argb: 'FF1E3A8A' } },
+                            left: { style: 'thin', color: { argb: 'FF1E3A8A' } },
+                            bottom: { style: 'thin', color: { argb: 'FF1E3A8A' } },
+                            right: { style: 'thin', color: { argb: 'FF1E3A8A' } }
+                        };
+                    });
+                }
+            });
+
+            const imgColIdx = visibleCols.findIndex(c => c.id === 'img');
+
+            if (imgColIdx !== -1) {
+                for (let rIdx = 0; rIdx < dataToExport.length; rIdx++) {
+                    const item = dataToExport[rIdx];
+
+                    if (item.imgData) {
+                        try {
+                            const matches = item.imgData.match(/^data:image\/([a-zA-Z]*);base64,(.*)$/);
+                            if (matches && matches.length === 3) {
+                                let ext = matches[1];
+                                if (ext === 'jpg') ext = 'jpeg';
+
+                                const imageId = workbook.addImage({ base64: matches[2], extension: ext });
+
+                                worksheet.addImage(imageId, {
+                                    tl: { col: imgColIdx + 0.1, row: rIdx + 1 + 0.1 },
+                                    ext: { width: 52, height: 52 },
+                                    editAs: 'oneCell'
+                                });
+                            }
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    }
+                }
+            }
+
+            try {
+                const buffer = await workbook.xlsx.writeBuffer();
+                saveAs(new Blob([buffer]), `Match_Sistemi_Rapor_${new Date().toISOString().slice(0, 10)}.xlsx`);
+            } catch (err) {
+                console.error('Excel yaradılarkən xəta:', err);
+                alert('Excel yaradılarkən xəta baş verdi. Konsolu yoxlayın.');
+            }
+        }
+
+        // PDF export - Başlıq (thead) düzəlişi edilmiş versiya
+        async function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const dataToExport = getProcessedData();
+
+            if (dataToExport.length === 0) {
+                alert('Eksport ediləcək məlumat yoxdur!');
+                return;
+            }
+
+            const originalTitle = document.title;
+            document.title = "PDF hazırlanır...";
+
+            const pdfContainer = document.createElement('div');
+            pdfContainer.style.position = 'fixed';
+            pdfContainer.style.top = '-9999px';
+            pdfContainer.style.left = '-9999px';
+            pdfContainer.style.width = '1120px';
+            pdfContainer.style.background = '#ffffff';
+            pdfContainer.style.padding = '25px';
+            pdfContainer.style.fontFamily = 'Arial, sans-serif';
+
+            const titleEl = document.createElement('h2');
+            titleEl.textContent = 'Məhsul Çarpaz Uyğunlaşdırma Hesabatı';
+            titleEl.style.color = '#1e3a8a';
+            titleEl.style.marginBottom = '8px';
+            pdfContainer.appendChild(titleEl);
+
+            const subTitleEl = document.createElement('p');
+            subTitleEl.textContent = `Tarix: ${new Date().toLocaleDateString('az-AZ')} | Sətir sayı: ${dataToExport.length}`;
+            subTitleEl.style.color = '#64748b';
+            subTitleEl.style.marginBottom = '20px';
+            subTitleEl.style.fontSize = '13px';
+            pdfContainer.appendChild(subTitleEl);
+
+            const tableEl = document.createElement('table');
+            tableEl.style.width = '100%';
+            tableEl.style.borderCollapse = 'collapse';
+            tableEl.style.fontSize = '11px';
+            tableEl.style.border = '1px solid #1e3a8a';
+            tableEl.style.tableLayout = 'fixed';
+
+            const visibleCols = COLUMNS.filter(c => columnVisibility[c.id] && c.id !== 'actions');
+
+            const thead = document.createElement('thead');
+            const trHead = document.createElement('tr');
+            visibleCols.forEach(col => {
+                const th = document.createElement('th');
+                th.textContent = col.label;
+                th.style.position = 'static';
+                th.style.top = 'auto';
+                th.style.background = '#1e3a8a';
+                th.style.color = '#ffffff';
+                th.style.padding = '10px 6px';
+                th.style.border = '1px solid #1e3a8a';
+                th.style.textAlign = 'center';
+                th.style.fontWeight = 'bold';
+                th.style.fontSize = '11px';
+                th.style.zIndex = 'auto';
+                trHead.appendChild(th);
+            });
+            thead.appendChild(trHead);
+            tableEl.appendChild(thead);
+
+            const tbody = document.createElement('tbody');
+            dataToExport.forEach((row, viewIndex) => {
+                const tr = document.createElement('tr');
+                tr.style.backgroundColor = '#ffffff';
+                visibleCols.forEach(col => {
+                    const td = document.createElement('td');
+                    td.style.padding = '8px 6px';
+                    td.style.border = '1px solid #1e3a8a';
+                    td.style.color = '#000000';
+                    td.style.wordBreak = 'break-word';
+                    td.style.verticalAlign = 'middle';
+                    td.style.overflow = 'visible';
+
+                    if (['srNo', 'anbarQarayev', 'anbarRazin', 'anbarEsas', 'alis', 'satis', 'size'].includes(col.id)) {
+                        td.style.textAlign = 'center';
+                    } else {
+                        td.style.textAlign = 'left';
+                    }
+
+                    if (col.id === 'srNo') {
+                        td.textContent = viewIndex + 1;
+                        td.style.fontWeight = 'bold';
+                    } else if (col.id === 'img') {
+                        const img = document.createElement('img');
+                        img.src = row.imgData;
+                        img.style.width = '45px';
+                        img.style.height = '45px';
+                        img.style.objectFit = 'contain';
+                        img.style.border = 'none';
+                        td.appendChild(img);
+                        td.style.textAlign = 'center';
+                    } else {
+                        td.textContent = row[col.id] || '';
+                    }
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            tableEl.appendChild(tbody);
+
+            pdfContainer.appendChild(tableEl);
+            document.body.appendChild(pdfContainer);
+
+            try {
+                const canvas = await html2canvas(pdfContainer, {
+                    scale: 2.5,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff',
+                    windowWidth: pdfContainer.scrollWidth,
+                    windowHeight: pdfContainer.scrollHeight
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                const pdf = new jsPDF('l', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
+                heightLeft -= pdfHeight;
+
+                while (heightLeft > 0) {
+                    position -= pdfHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
+                    heightLeft -= pdfHeight;
+                }
+
+                pdf.save(`Match_Sistemi_PDF_Rapor_${new Date().toISOString().slice(0, 10)}.pdf`);
+            } catch (err) {
+                console.error('PDF yaradılarkən xəta:', err);
+                alert('PDF yaradılarkən xəta baş verdi. Konsolu yoxlayın.');
+            } finally {
+                document.body.removeChild(pdfContainer);
+                document.title = originalTitle;
+            }
+        }
+    </script>
+
+</body>
+</html>

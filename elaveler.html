@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Əlavə Proqramlar</title>
+
+<style>
+  /* ============================================================
+     RƏNGLƏR VƏ ÜMUMİ TƏNZİMLƏMƏLƏR
+     Rəngi dəyişmək istəsəniz, bu yerdəki HEX kodları dəyişin.
+     ============================================================ */
+  :root {
+    --bg: #16324A;           /* Fon rəngi */
+    --panel: #1c3d5c;        /* Kartların fonu (fondan bir az açıq) */
+    --panel-hover: #22496e;  /* Kart üzərinə gələndə */
+    --border: #2c4d6b;       /* İncə xətlərin rəngi */
+    --text: #e9ecf1;         /* Əsas mətn rəngi */
+    --text-dim: #8fa3b8;     /* Solğun mətn (izahat) */
+    --accent: #5eead4;       /* Vurğu rəngi (nömrələr, axtarış) */
+    --accent-soft: rgba(94, 234, 212, 0.12);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Səhifənin maksimum eni — böyük ekranlarda ortada dursun */
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 28px 18px 60px;
+  }
+
+  header {
+    margin-bottom: 22px;
+  }
+
+  /* Başlıqla geri düyməsini yan-yana düzmək üçün */
+  .header-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Geri qayıtma düyməsi (index.html-ə aparır) */
+  .back-btn {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    text-decoration: none;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  }
+
+  .back-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke: var(--text);
+  }
+
+  .back-btn:active {
+    transform: scale(0.95);
+  }
+
+  @media (hover: hover) {
+    .back-btn:hover {
+      background: var(--panel-hover);
+      border-color: var(--accent);
+    }
+    .back-btn:hover svg {
+      stroke: var(--accent);
+    }
+  }
+
+  header h1 {
+    font-size: 24px;
+    margin: 0 0 4px;
+    letter-spacing: -0.02em;
+  }
+
+  header p {
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  /* ============================================================
+     AXTARIŞ QUTUSU
+     ============================================================ */
+  .search-box {
+    position: relative;
+    margin: 22px 0 18px;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 13px 16px 13px 42px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .search-box input::placeholder {
+    color: var(--text-dim);
+  }
+
+  .search-box input:focus {
+    border-color: var(--accent);
+  }
+
+  .search-box svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 17px;
+    height: 17px;
+    stroke: var(--text-dim);
+  }
+
+  /* Heç bir nəticə tapılmayanda görünən yazı */
+  .no-result {
+    display: none;
+    text-align: center;
+    color: var(--text-dim);
+    padding: 30px 0;
+    font-size: 14px;
+  }
+
+  /* ============================================================
+     LİNK SİYAHISI
+     ============================================================ */
+  #list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  #list li a {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    text-decoration: none;
+    color: var(--text);
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+
+  #list li a:active {
+    transform: scale(0.98);
+  }
+
+  @media (hover: hover) {
+    #list li a:hover {
+      background: var(--panel-hover);
+      border-color: var(--accent);
+    }
+  }
+
+  /* Sıra sayı dairəsi (01, 02, 03 ...) */
+  .num {
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .info {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .info .title {
+    display: block;               /* ✅ ƏLAVƏ EDİLDİ: span-i blok elementə çevirir ki, öz sətrini tutsun */
+    font-size: 15.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .info .desc {
+    display: block;               /* ✅ ƏLAVƏ EDİLDİ: bunun sayəsində desc həmişə title-ın altında qalır */
+    font-size: 13px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+  }
+
+  .arrow {
+    flex: 0 0 auto;
+    color: var(--text-dim);
+    font-size: 18px;
+  }
+
+  footer {
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 12px;
+    margin-top: 40px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <div class="header-row">
+      <!-- GERİ DÜYMƏSİ: index.html səhifəsinə qaytarır -->
+      <a href="index.html" class="back-btn" aria-label="Geri qayıt">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </a>
+      <h1>Əlavə Proqramlar</h1>
+    </div>
+    <p>Bütün səhifələr bir yerdə — istədiyini axtar və keç</p>
+  </header>
+
+  <!-- AXTARIŞ QUTUSU -->
+  <div class="search-box">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    <input type="text" id="searchInput" placeholder="Axtar...">
+  </div>
+
+  <!-- LİNKLƏR BURADA JAVASCRIPT VASİTƏSİLƏ YARADILIR (aşağıdakı "pages" siyahısına bax) -->
+  <ul id="list"></ul>
+
+  <p class="no-result" id="noResult">Heç nə tapılmadı 🔍</p>
+
+  <footer>Yeni səhifə əlavə etmək üçün izahata bax</footer>
+
+</div>
+
+<script>
+  /* ============================================================
+     ⭐ SƏHİFƏLƏRİN SİYAHISI ⭐
+     ------------------------------------------------------------
+     Yeni bir HTML proqram/səhifə əlavə etmək üçün sadəcə
+     aşağıdakı "pages" siyahısına YENİ BİR SƏTİR əlavə edin.
+
+     Hər sətir belədir:
+     { title: "Görünəcək ad", desc: "Qısa izahat", url: "sehife.html" }
+
+     - title  → siyahıda görünəcək başlıq
+     - desc   → başlığın altında görünəcək qısa izahat (istəyə bağlı, boş da ola bilər: "")
+     - url    → o səhifənin fayl adı (məs: "hesab.html", "oyun/index.html")
+
+     Sətirlər arasında VERGÜL ( , ) qoymağı unutmayın!
+     Sonuncu sətirdən sonra vergül QOYULMUR.
+     ============================================================ */
+
+  const pages = [
+    { title: "Şəkil Format Dəyişdirici",        desc: "PNG, JPG, JPEG, WEBP və BMP formatlarını toplu şəkildə çevir",         url: "elaveler/sekil-format-deyisdirici.html" },
+    { title: "Şəlildən məlumat çək",            desc: "Ağıllı çarpaz müqayisə və hesabat idarəetmə paneli",                   url: "elaveler/sekilden-melumat-cek.html" },
+    { title: "AZ-EN şirift dəyişdirici",        desc: "Tərcümə etmir, yazılışını dəyişir",                                    url: "elaveler/az-en.html" }
+
+  ];
+
+  /* ============================================================
+     AŞAĞIDAKI HİSSƏYƏ TOXUNMAĞA EHTİYAC YOXDUR
+     Bu hissə yuxarıdakı "pages" siyahısını avtomatik olaraq
+     nömrələnmiş linklərə çevirir və axtarışı işlədir.
+     ============================================================ */
+
+  const listEl = document.getElementById('list');
+  const noResultEl = document.getElementById('noResult');
+  const searchInput = document.getElementById('searchInput');
+
+  function render(items) {
+    listEl.innerHTML = '';
+
+    if (items.length === 0) {
+      noResultEl.style.display = 'block';
+      return;
+    }
+    noResultEl.style.display = 'none';
+
+    items.forEach((page, index) => {
+      const li = document.createElement('li');
+
+      const numberStr = String(index + 1).padStart(2, '0'); // 01, 02, 03...
+
+      li.innerHTML = `
+        <a href="${page.url}">
+          <span class="num">${numberStr}</span>
+          <span class="info">
+            <span class="title">${page.title}</span>
+            <span class="desc">${page.desc || ''}</span>
+          </span>
+          <span class="arrow">→</span>
+        </a>
+      `;
+      listEl.appendChild(li);
+    });
+  }
+
+  // İlk yükləmədə bütün səhifələri göstər
+  render(pages);
+
+  // Axtarış qutusuna yazılanda siyahını filtrlə
+  searchInput.addEventListener('input', function () {
+    const query = this.value.trim().toLowerCase();
+
+    const filtered = pages.filter(page =>
+      page.title.toLowerCase().includes(query) ||
+      (page.desc || '').toLowerCase().includes(query)
+    );
+
+    render(filtered);
+  });
+</script>
+
+</body>
+</html>

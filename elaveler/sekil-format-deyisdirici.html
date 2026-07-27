@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Şəkil Format Dəyişdirici PRO</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+<style>
+    *{
+        margin:0;
+        padding:0;
+        box-sizing:border-box;
+        font-family:Segoe UI, Arial, sans-serif;
+    }
+
+    body{
+        background:
+        linear-gradient(135deg,#0f172a,#111827,#1e293b);
+        min-height:100vh;
+        color:white;
+        padding:14px;
+        font-size:14px;
+    }
+
+    .container{
+        max-width:1100px;
+        margin:auto;
+    }
+
+    .title{
+        text-align:center;
+        margin-bottom:12px;
+    }
+
+    .title h1{
+        font-size:22px;
+        margin-bottom:3px;
+        background:linear-gradient(to right,#60a5fa,#22d3ee);
+        -webkit-background-clip:text;
+        -webkit-text-fill-color:transparent;
+    }
+
+    .title p{
+        opacity:.75;
+        font-size:12px;
+    }
+
+    .upload-box{
+        border:2px dashed rgba(255,255,255,.25);
+        border-radius:14px;
+        padding:16px;
+        text-align:center;
+        background:rgba(255,255,255,.05);
+        backdrop-filter:blur(12px);
+        transition:.3s;
+        cursor:pointer;
+        display:block;
+    }
+
+    .upload-box:hover{
+        border-color:#38bdf8;
+        background:rgba(255,255,255,.08);
+    }
+
+    .upload-box.drag{
+        border-color:#22d3ee;
+        background:rgba(34,211,238,.12);
+        transform:scale(1.01);
+    }
+
+    .upload-box h2{
+        font-size:15px;
+        margin-bottom:3px;
+    }
+
+    .upload-box p{
+        opacity:.75;
+        font-size:12px;
+    }
+
+    input[type=file]{
+        display:none;
+    }
+
+    .top-bar{
+        margin-top:12px;
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+        gap:10px;
+    }
+
+    .card{
+        background:rgba(255,255,255,.06);
+        border:1px solid rgba(255,255,255,.08);
+        border-radius:12px;
+        padding:10px 12px;
+        backdrop-filter:blur(10px);
+    }
+
+    .card h3{
+        margin-bottom:6px;
+        color:#7dd3fc;
+        font-size:12px;
+        font-weight:600;
+        text-transform:uppercase;
+        letter-spacing:.03em;
+    }
+
+    .select,
+    .range{
+        width:100%;
+        margin-top:4px;
+    }
+
+    select{
+        width:100%;
+        padding:8px 10px;
+        border-radius:8px;
+        border:none;
+        outline:none;
+        background:#111827;
+        color:white;
+        font-size:13px;
+    }
+
+    input[type=range]{
+        width:100%;
+        accent-color:#22d3ee;
+        height:16px;
+    }
+
+    input[type=number]{
+        width:100%;
+        padding:7px 10px;
+        border-radius:8px;
+        border:none;
+        outline:none;
+        background:#111827;
+        color:white;
+        font-size:13px;
+    }
+
+    input[type=number]:disabled{
+        opacity:.5;
+    }
+
+    .checkbox-row{
+        display:flex;
+        align-items:center;
+        gap:7px;
+        margin-bottom:7px;
+        cursor:pointer;
+        user-select:none;
+        font-size:13px;
+    }
+
+    .checkbox-row input{
+        width:15px;
+        height:15px;
+        accent-color:#22d3ee;
+        cursor:pointer;
+    }
+
+    .hint{
+        margin-top:5px;
+        font-size:11px;
+        opacity:.6;
+        line-height:1.4;
+    }
+
+    .stats{
+        line-height:1.7;
+        font-size:13px;
+    }
+
+    .stats span{
+        color:#67e8f9;
+        font-weight:bold;
+    }
+
+    .gallery{
+        margin-top:12px;
+        display:grid;
+        grid-template-columns:repeat(auto-fill,minmax(110px,1fr));
+        gap:10px;
+    }
+
+    .image-card{
+        background:rgba(255,255,255,.05);
+        border-radius:10px;
+        overflow:hidden;
+        border:1px solid rgba(255,255,255,.08);
+        transition:.3s;
+        position:relative;
+    }
+
+    .image-card:hover{
+        transform:translateY(-3px);
+        border-color:#38bdf8;
+    }
+
+    .image-card img{
+        width:100%;
+        height:90px;
+        object-fit:cover;
+        display:block;
+    }
+
+    .image-info{
+        padding:6px 8px;
+    }
+
+    .image-name{
+        font-size:11px;
+        word-break:break-word;
+        margin-bottom:2px;
+    }
+
+    .image-size{
+        font-size:10px;
+        opacity:.7;
+    }
+
+    .remove-btn{
+        position:absolute;
+        top:4px;
+        right:4px;
+        width:20px;
+        height:20px;
+        border-radius:50%;
+        background:rgba(0,0,0,.55);
+        color:white;
+        border:none;
+        cursor:pointer;
+        font-size:11px;
+        line-height:1;
+        padding:0;
+    }
+
+    .remove-btn:hover{
+        background:#dc2626;
+    }
+
+    .buttons{
+        margin-top:14px;
+        display:flex;
+        flex-wrap:wrap;
+        gap:8px;
+        justify-content:center;
+    }
+
+    button{
+        border:none;
+        padding:9px 18px;
+        border-radius:9px;
+        cursor:pointer;
+        font-size:13px;
+        font-weight:bold;
+        transition:.3s;
+    }
+
+    button:disabled{
+        opacity:.45;
+        cursor:not-allowed;
+        transform:none !important;
+    }
+
+    .convert-btn{
+        background:linear-gradient(to right,#06b6d4,#3b82f6);
+        color:white;
+    }
+
+    .download-btn{
+        background:linear-gradient(to right,#22c55e,#16a34a);
+        color:white;
+    }
+
+    .clear-btn{
+        background:linear-gradient(to right,#ef4444,#dc2626);
+        color:white;
+    }
+
+    button:not(:disabled):hover{
+        transform:translateY(-2px) scale(1.03);
+    }
+
+    .progress-box{
+        margin-top:14px;
+        display:none;
+    }
+
+    .progress-bar{
+        width:100%;
+        height:14px;
+        background:rgba(255,255,255,.08);
+        border-radius:50px;
+        overflow:hidden;
+    }
+
+    .progress-fill{
+        height:100%;
+        width:0%;
+        background:linear-gradient(to right,#22d3ee,#3b82f6);
+        transition:.2s;
+    }
+
+    .progress-text{
+        margin-top:6px;
+        text-align:center;
+        font-size:12px;
+    }
+
+    .footer{
+        margin-top:18px;
+        text-align:center;
+        opacity:.5;
+        font-size:11px;
+    }
+
+    @media(max-width:600px){
+        .title h1{
+            font-size:18px;
+        }
+
+        .upload-box{
+            padding:12px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="title">
+        <h1>Şəkil Format Dəyişdirici PRO</h1>
+        <p>PNG, JPG, JPEG, WEBP və BMP formatlarını toplu şəkildə çevir</p>
+    </div>
+
+    <label class="upload-box" id="dropArea">
+        <input type="file" id="fileInput" multiple accept="image/*">
+        <h2>Şəkilləri əlavə et</h2>
+        <p>Click et və ya sürüklə burax</p>
+    </label>
+
+    <div class="top-bar">
+
+        <div class="card">
+            <h3>Format Seç</h3>
+
+            <select id="formatSelect">
+                <option value="jpg">JPG</option>
+                <option value="jpeg">JPEG</option>
+                <option value="png">PNG</option>
+                <option value="webp">WEBP</option>
+                <option value="bmp">BMP</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <h3>Keyfiyyət</h3>
+
+            <input type="range"
+                   min="10"
+                   max="100"
+                   value="90"
+                   id="qualityRange"
+                   class="range">
+
+            <div style="margin-top:10px;">
+                <span id="qualityValue">90</span>%
+            </div>
+            <div class="hint" id="qualityHint"></div>
+        </div>
+
+        <div class="card">
+            <h3>Ölçü (Max Böyük Tərəf)</h3>
+
+            <label class="checkbox-row">
+                <input type="checkbox" id="resizeEnable" checked>
+                Böyük tərəfi məhdudlaşdır
+            </label>
+
+            <input type="number"
+                   id="maxSizeInput"
+                   min="16"
+                   max="10000"
+                   step="1"
+                   value="800">
+
+            <div class="hint">
+                px. Məs: 400x800 → böyük tərəf 800px-ə,
+                kiçik tərəf isə nisbətdə uyğunlaşır.
+                Şəkil bundan kiçikdirsə böyüdülmür.
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Statistika</h3>
+
+            <div class="stats">
+                Şəkil sayı:
+                <span id="imageCount">0</span>
+                <br>
+
+                Original ölçü:
+                <span id="originalSize">0 MB</span>
+                <br>
+
+                Təxmini yeni ölçü:
+                <span id="estimatedSize">0 MB</span>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="buttons">
+        <button class="convert-btn" id="convertBtn">
+            Şəkilləri Çevir
+        </button>
+
+        <button class="download-btn" id="downloadBtn" disabled>
+            ZIP olaraq Endir
+        </button>
+
+        <button class="clear-btn" id="clearBtn">
+            Hamısını Sil
+        </button>
+    </div>
+
+    <div class="progress-box" id="progressBox">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="progress-text" id="progressText">
+            Hazırlanır...
+        </div>
+    </div>
+
+    <div class="gallery" id="gallery"></div>
+
+    <div class="footer">
+        Professional HTML Şəkil Converter
+    </div>
+
+</div>
+
+<script>
+
+const fileInput = document.getElementById("fileInput");
+const dropArea = document.getElementById("dropArea");
+const gallery = document.getElementById("gallery");
+
+const imageCount = document.getElementById("imageCount");
+const originalSize = document.getElementById("originalSize");
+const estimatedSize = document.getElementById("estimatedSize");
+
+const qualityRange = document.getElementById("qualityRange");
+const qualityValue = document.getElementById("qualityValue");
+const qualityHint = document.getElementById("qualityHint");
+
+const formatSelect = document.getElementById("formatSelect");
+
+const resizeEnable = document.getElementById("resizeEnable");
+const maxSizeInput = document.getElementById("maxSizeInput");
+
+const convertBtn = document.getElementById("convertBtn");
+const downloadBtn = document.getElementById("downloadBtn");
+const clearBtn = document.getElementById("clearBtn");
+
+const progressBox = document.getElementById("progressBox");
+const progressFill = document.getElementById("progressFill");
+const progressText = document.getElementById("progressText");
+
+let files = [];
+let convertedFiles = [];
+
+// ---------- helpers ----------
+
+function formatBytes(bytes){
+    if(bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes","KB","MB","GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k,i)).toFixed(2)) + " " + sizes[i];
+}
+
+// Any change to settings after a previous conversion invalidates the
+// old converted files, so the download button is reset until the user
+// converts again with the new settings.
+function invalidateConversion(){
+    convertedFiles = [];
+    downloadBtn.disabled = true;
+}
+
+function updateQualityHint(){
+    const format = formatSelect.value;
+    if(format === "png"){
+        qualityHint.innerText = "PNG itkisiz formatdır, keyfiyyət parametri təsir etmir.";
+    } else if(format === "bmp"){
+        qualityHint.innerText = "BMP sıxılmayan formatdır, keyfiyyət parametri təsir etmir.";
+    } else {
+        qualityHint.innerText = "";
+    }
+}
+
+// ---------- events ----------
+
+qualityRange.addEventListener("input", () => {
+    qualityValue.innerText = qualityRange.value;
+    calculateEstimatedSize();
+    invalidateConversion();
+});
+
+formatSelect.addEventListener("change", () => {
+    updateQualityHint();
+    calculateEstimatedSize();
+    invalidateConversion();
+});
+
+resizeEnable.addEventListener("change", () => {
+    maxSizeInput.disabled = !resizeEnable.checked;
+    calculateEstimatedSize();
+    invalidateConversion();
+});
+
+maxSizeInput.addEventListener("input", () => {
+    calculateEstimatedSize();
+    invalidateConversion();
+});
+
+fileInput.addEventListener("change", (e) => {
+    addFiles(e.target.files);
+    fileInput.value = "";
+});
+
+dropArea.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropArea.classList.add("drag");
+});
+
+dropArea.addEventListener("dragleave", () => {
+    dropArea.classList.remove("drag");
+});
+
+dropArea.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropArea.classList.remove("drag");
+    addFiles(e.dataTransfer.files);
+});
+
+// ---------- file management ----------
+
+function addFiles(selectedFiles){
+    const imageFiles = [...selectedFiles].filter(file =>
+        file.type.startsWith("image/")
+    );
+
+    files.push(...imageFiles);
+
+    renderGallery();
+    updateStats();
+    invalidateConversion();
+}
+
+function removeFile(index){
+    files.splice(index,1);
+    renderGallery();
+    updateStats();
+    invalidateConversion();
+}
+
+function renderGallery(){
+    gallery.innerHTML = "";
+
+    files.forEach((file,index) => {
+        const url = URL.createObjectURL(file);
+
+        const div = document.createElement("div");
+        div.className = "image-card";
+
+        div.innerHTML = `
+            <button class="remove-btn" data-index="${index}" title="Sil">✕</button>
+            <img src="${url}">
+
+            <div class="image-info">
+                <div class="image-name">${file.name}</div>
+                <div class="image-size">${formatBytes(file.size)}</div>
+            </div>
+        `;
+
+        gallery.appendChild(div);
+    });
+
+    gallery.querySelectorAll(".remove-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            const idx = Number(e.currentTarget.dataset.index);
+            removeFile(idx);
+        });
+    });
+}
+
+function updateStats(){
+    imageCount.innerText = files.length;
+
+    let total = files.reduce((a,b) => a + b.size,0);
+
+    originalSize.innerText = formatBytes(total);
+
+    calculateEstimatedSize();
+}
+
+function calculateEstimatedSize(){
+    let total = files.reduce((a,b)=>a+b.size,0);
+    let quality = Number(qualityRange.value);
+    let format = formatSelect.value;
+
+    let estimated = total;
+
+    if(format === "jpeg" || format === "webp" || format === "jpg"){
+        estimated = total * (quality / 120);
+    }
+
+    if(format === "png"){
+        estimated = total * 1.2;
+    }
+
+    if(format === "bmp"){
+        estimated = total * 2.5;
+    }
+
+    // Resizing to a smaller max side roughly scales the estimate by
+    // the ratio of pixel areas. We don't know real dimensions without
+    // loading every image, so this is a rough approximation only.
+    if(resizeEnable.checked){
+        estimated = estimated * 0.85;
+    }
+
+    estimatedSize.innerText = "~" + formatBytes(Math.max(estimated,0));
+}
+
+// ---------- conversion ----------
+
+convertBtn.addEventListener("click", async () => {
+    if(files.length === 0){
+        alert("Şəkil əlavə et");
+        return;
+    }
+
+    convertedFiles = [];
+    downloadBtn.disabled = true;
+
+    progressBox.style.display = "block";
+    progressFill.style.width = "0%";
+
+    const format = formatSelect.value;
+    const quality = qualityRange.value / 100;
+    const doResize = resizeEnable.checked;
+    const maxSize = Math.max(16, Number(maxSizeInput.value) || 800);
+
+    let failCount = 0;
+
+    for(let i=0;i<files.length;i++){
+        const file = files[i];
+
+        progressText.innerText = `${i+1} / ${files.length} çevrilir...`;
+        progressFill.style.width = ((i+1)/files.length*100) + "%";
+
+        try{
+            const converted = await convertImage(file,format,quality,doResize,maxSize);
+            if(converted){
+                convertedFiles.push(converted);
+            } else {
+                failCount++;
+            }
+        } catch(err){
+            console.error("Çevrilmə xətası:", file.name, err);
+            failCount++;
+        }
+    }
+
+    progressText.innerText = "Hazırdır";
+
+    if(convertedFiles.length > 0){
+        downloadBtn.disabled = false;
+    }
+
+    if(failCount > 0){
+        alert(`${convertedFiles.length} şəkil çevrildi, ${failCount} şəkil çevrilə bilmədi.`);
+    } else {
+        alert("Bütün şəkillər çevrildi");
+    }
+});
+
+function convertImage(file,format,quality,doResize,maxSize){
+    return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+
+        img.onload = function(){
+            URL.revokeObjectURL(url);
+
+            let targetW = img.naturalWidth;
+            let targetH = img.naturalHeight;
+
+            if(doResize){
+                const largerSide = Math.max(targetW, targetH);
+                if(largerSide > maxSize){
+                    const scale = maxSize / largerSide;
+                    targetW = Math.max(1, Math.round(targetW * scale));
+                    targetH = Math.max(1, Math.round(targetH * scale));
+                }
+            }
+
+            const canvas = document.createElement("canvas");
+            canvas.width = targetW;
+            canvas.height = targetH;
+
+            const ctx = canvas.getContext("2d");
+
+            // JPG/JPEG/BMP don't support transparency, so flatten
+            // onto a white background first to avoid black backgrounds.
+            if(format === "jpeg" || format === "jpg" || format === "bmp"){
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(0,0,targetW,targetH);
+            }
+
+            ctx.drawImage(img,0,0,targetW,targetH);
+
+            const originalName = file.name.replace(/\.[^/.]+$/, "");
+
+            if(format === "bmp"){
+                // Most browsers cannot encode BMP via canvas.toBlob,
+                // so we build the 24-bit BMP file manually from pixel data.
+                try{
+                    const blob = canvasToBMPBlob(canvas);
+                    const newFile = new File([blob], originalName + ".bmp", {type:"image/bmp"});
+                    resolve(newFile);
+                } catch(err){
+                    reject(err);
+                }
+                return;
+            }
+
+            let mime = "image/" + format;
+            if(format === "jpg"){
+                mime = "image/jpeg";
+            }
+
+            canvas.toBlob((blob) => {
+                if(!blob){
+                    reject(new Error("toBlob returned null for " + file.name));
+                    return;
+                }
+
+                const newFile = new File([blob], originalName + "." + format, {type:mime});
+                resolve(newFile);
+            }, mime, quality);
+        };
+
+        img.onerror = function(){
+            URL.revokeObjectURL(url);
+            reject(new Error("Şəkil yüklənə bilmədi: " + file.name));
+        };
+
+        img.src = url;
+    });
+}
+
+// Manually encodes a canvas as an uncompressed 24-bit BMP file.
+// canvas.toBlob("image/bmp") is not supported by browsers, so this
+// builds the BITMAPFILEHEADER + BITMAPINFOHEADER + pixel array by hand.
+function canvasToBMPBlob(canvas){
+    const w = canvas.width;
+    const h = canvas.height;
+
+    const ctx = canvas.getContext("2d");
+    const imageData = ctx.getImageData(0,0,w,h).data;
+
+    const rowSize = Math.floor((24 * w + 31) / 32) * 4; // padded to 4 bytes
+    const pixelArraySize = rowSize * h;
+    const fileSize = 54 + pixelArraySize;
+
+    const buffer = new ArrayBuffer(fileSize);
+    const view = new DataView(buffer);
+
+    // BITMAPFILEHEADER
+    view.setUint8(0, 0x42); // 'B'
+    view.setUint8(1, 0x4D); // 'M'
+    view.setUint32(2, fileSize, true);
+    view.setUint32(6, 0, true);
+    view.setUint32(10, 54, true); // pixel data offset
+
+    // BITMAPINFOHEADER
+    view.setUint32(14, 40, true);
+    view.setInt32(18, w, true);
+    view.setInt32(22, h, true); // positive height = bottom-up row order
+    view.setUint16(26, 1, true); // planes
+    view.setUint16(28, 24, true); // bits per pixel
+    view.setUint32(30, 0, true); // BI_RGB, no compression
+    view.setUint32(34, pixelArraySize, true);
+    view.setInt32(38, 2835, true); // ~72 DPI
+    view.setInt32(42, 2835, true);
+    view.setUint32(46, 0, true);
+    view.setUint32(50, 0, true);
+
+    let offset = 54;
+
+    for(let y = h - 1; y >= 0; y--){
+        for(let x = 0; x < w; x++){
+            const idx = (y * w + x) * 4;
+            const r = imageData[idx];
+            const g = imageData[idx + 1];
+            const b = imageData[idx + 2];
+
+            view.setUint8(offset++, b);
+            view.setUint8(offset++, g);
+            view.setUint8(offset++, r);
+        }
+
+        const padding = rowSize - w * 3;
+        for(let p = 0; p < padding; p++){
+            view.setUint8(offset++, 0);
+        }
+    }
+
+    return new Blob([buffer], {type:"image/bmp"});
+}
+
+downloadBtn.addEventListener("click", async () => {
+    if(convertedFiles.length === 0){
+        alert("Əvvəl çevirmə et");
+        return;
+    }
+
+    const zip = new JSZip();
+
+    convertedFiles.forEach(file => {
+        zip.file(file.name,file);
+    });
+
+    progressText.innerText = "ZIP hazırlanır...";
+    progressFill.style.width = "100%";
+
+    const content = await zip.generateAsync({type:"blob"});
+
+    saveAs(content,"converted_images.zip");
+});
+
+clearBtn.addEventListener("click", () => {
+    files = [];
+    convertedFiles = [];
+
+    gallery.innerHTML = "";
+
+    imageCount.innerText = "0";
+    originalSize.innerText = "0 MB";
+    estimatedSize.innerText = "0 MB";
+
+    progressBox.style.display = "none";
+
+    downloadBtn.disabled = true;
+});
+
+// ---------- init ----------
+
+updateQualityHint();
+
+</script>
+
+</body>
+</html>
