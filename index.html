@@ -502,6 +502,17 @@
     .import-btn:last-child { margin-bottom: 0; }
     .import-btn:active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
     .import-btn .ib-icon { font-size: 20px; }
+    .import-meta {
+      font-size: 10px;
+      color: var(--text-muted);
+      opacity: 0.55;
+      text-transform: lowercase;
+      text-align: center;
+      margin-top: -4px;
+      margin-bottom: 8px;
+      min-height: 12px;
+    }
+    .import-meta:empty { margin: 0; min-height: 0; }
 
     /* ── EXPORT BUTTONS ── */
     .export-section {
@@ -1391,6 +1402,13 @@
             <span class="toggle-track"></span>
           </label>
         </div>
+        <div class="toggle-row" style="margin-bottom:14px">
+          <span class="toggle-label">Yalnız şəkilsiz məhsullar</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="filter-only-noimg">
+            <span class="toggle-track"></span>
+          </label>
+        </div>
         <div class="filter-row">
           <div class="filter-col">
             <label class="filter-label">Sırala</label>
@@ -1426,14 +1444,17 @@
           <span class="ib-icon">📊</span>
           <span>Excel faylı idxal et (.xlsx / .xls)</span>
         </button>
+        <div class="import-meta" id="excel-meta"></div>
         <button class="import-btn" id="images-btn">
           <span class="ib-icon">🖼️</span>
           <span>Şəkil qovluğu idxal et</span>
         </button>
+        <div class="import-meta" id="images-meta"></div>
         <button class="import-btn" id="zip-btn">
           <span class="ib-icon">📚️</span>
           <span>Şəkillər ZIP faylından idxal et</span>
         </button>
+        <div class="import-meta" id="zip-meta"></div>
         <button class="import-btn" id="gdrive-btn">
           <span class="ib-icon">☁️</span>
           <span>Bazanı Google Drive-dan endir</span>
@@ -1737,6 +1758,7 @@ let filters = {
   alishMin: 0,
   alishMax: Infinity,
   onlyWithImage: false,
+  onlyWithoutImage: false,
   sortBy: 'name',
   sortDir: 'asc',
 };
@@ -1811,6 +1833,33 @@ function setStatusError(msg) {
 // ─────────────────────────────────────────────
 // EXCEL PARSING
 // ─────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// İDXAL METADATASI (son yenilənmə tarixi + fayl adı)
+// ─────────────────────────────────────────────
+function saveImportMeta(key, fileName) {
+  try {
+    localStorage.setItem('importMeta_' + key, JSON.stringify({ date: Date.now(), name: fileName }));
+  } catch (e) {}
+  renderImportMeta(key);
+}
+function renderImportMeta(key) {
+  const el = document.getElementById(key + '-meta');
+  if (!el) return;
+  try {
+    const raw = localStorage.getItem('importMeta_' + key);
+    if (!raw) { el.textContent = ''; return; }
+    const meta = JSON.parse(raw);
+    const d = new Date(meta.date);
+    const pad = n => String(n).padStart(2, '0');
+    const dateStr = `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    el.textContent = `son yenilənmə: ${dateStr} — ${meta.name}`;
+  } catch (e) { el.textContent = ''; }
+}
+function renderAllImportMeta() {
+  ['excel', 'images', 'zip'].forEach(renderImportMeta);
+}
+renderAllImportMeta();
+
 document.getElementById('excel-btn').addEventListener('click', () => {
   document.getElementById('excel-input').click();
 });
@@ -1893,6 +1942,7 @@ document.getElementById('excel-input').addEventListener('change', async (e) => {
     buildLocationDropdown();
     applyFilters();
     updateStatus();
+    saveImportMeta('excel', file.name);
     await new Promise(r => setTimeout(r, 300));
     hideProgress();
     showToast(`✅ ${products.length} məhsul idxal edildi`);
@@ -1950,6 +2000,8 @@ document.getElementById('images-input').addEventListener('change', async (e) => 
   setProgress(100, 'Tamamlandı');
   applyFilters();
   updateStatus();
+  const folderName = (files[0] && files[0].webkitRelativePath) ? files[0].webkitRelativePath.split('/')[0] : `${processed} fayl`;
+  saveImportMeta('images', folderName);
   await new Promise(r => setTimeout(r, 300));
   hideProgress();
   showToast(`✅ ${processed} şəkil idxal edildi`);
@@ -2051,6 +2103,7 @@ document.getElementById('zip-input').addEventListener('change', async (e) => {
     setProgress(100, 'Tamamlandı');
     applyFilters();
     updateStatus();
+    saveImportMeta('zip', file.name);
     await new Promise(r => setTimeout(r, 300));
     hideProgress();
     showToast(`✅ ${processed} şəkil ZIP-dən idxal edildi`);
@@ -2517,6 +2570,7 @@ function applyFilters() {
   const aMin = filters.alishMin;
   const aMax = filters.alishMax;
   const onlyImg = filters.onlyWithImage;
+  const onlyNoImg = filters.onlyWithoutImage;
   const sortBy = filters.sortBy;
   const sortDir = filters.sortDir;
   const nameWords = searchName.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -2548,6 +2602,7 @@ function applyFilters() {
     if (alish < aMin) return false;
     if (alish > aMax) return false;
     if (onlyImg && !imageMap[p.artikul.toLowerCase()]) return false;
+    if (onlyNoImg && imageMap[p.artikul.toLowerCase()]) return false;
     return true;
   });
 
@@ -2719,6 +2774,19 @@ document.getElementById('filter-alish-max').addEventListener('input', debounce(e
 
 document.getElementById('filter-only-img').addEventListener('change', e => {
   filters.onlyWithImage = e.target.checked;
+  if (e.target.checked) {
+    filters.onlyWithoutImage = false;
+    document.getElementById('filter-only-noimg').checked = false;
+  }
+  applyFilters();
+});
+
+document.getElementById('filter-only-noimg').addEventListener('change', e => {
+  filters.onlyWithoutImage = e.target.checked;
+  if (e.target.checked) {
+    filters.onlyWithImage = false;
+    document.getElementById('filter-only-img').checked = false;
+  }
   applyFilters();
 });
 
@@ -2753,6 +2821,7 @@ document.getElementById('reset-filters-btn').addEventListener('click', () => {
     alishMin: 0,
     alishMax: Infinity,
     onlyWithImage: false,
+    onlyWithoutImage: false,
     sortBy: 'name',
     sortDir: 'asc',
   };
@@ -2769,6 +2838,7 @@ document.getElementById('reset-filters-btn').addEventListener('click', () => {
   document.getElementById('filter-alish-min').value = '';
   document.getElementById('filter-alish-max').value = '';
   document.getElementById('filter-only-img').checked = false;
+  document.getElementById('filter-only-noimg').checked = false;
   document.getElementById('filter-sort').value = 'name';
   document.getElementById('filter-dir').value = 'asc';
 
