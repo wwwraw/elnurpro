@@ -1487,7 +1487,7 @@
       <div class="settings-section-title with-top-gap">ℹ️ Haqqında</div>
 
       <div class="about-card">
-        <h2>📦 Elnur PRO - Anbar İdarəetmə PWA (v16.0)</h2>
+        <h2>📦 Elnur PRO - Anbar İdarəetmə PWA (v17.0)</h2>
         <p>Bu tətbiq Elnur Abdullayev tərəfindən hazırlanıb və tam offline işləyir. Program həm mobil həm də PC üçün nəzərdə tutulub. Ekran ölçüsü 900px böyük olanda program atomatik PC moduna keçir. İlk yükləmədən sonra internet bağlantısı olmadan da istifadə edilə bilər. Bütün məlumatlar cihazınızın IndexedDB bazasında saxlanır. Əlaqə üçün: 050-893-46-38</p>
       </div>
       <div class="about-card">
@@ -1978,6 +1978,7 @@ document.getElementById('excel-input').addEventListener('change', async (e) => {
     applyFilters();
     updateStatus();
     saveImportMeta('excel', file.name);
+    saveSessionCache();
     await new Promise(r => setTimeout(r, 300));
     hideProgress();
     showToast(`✅ ${products.length} məhsul idxal edildi`);
@@ -2037,6 +2038,7 @@ document.getElementById('images-input').addEventListener('change', async (e) => 
   updateStatus();
   const folderName = (files[0] && files[0].webkitRelativePath) ? files[0].webkitRelativePath.split('/')[0] : `${processed} fayl`;
   saveImportMeta('images', folderName);
+  saveSessionCache();
   await new Promise(r => setTimeout(r, 300));
   hideProgress();
   showToast(`✅ ${processed} şəkil idxal edildi`);
@@ -2139,6 +2141,7 @@ document.getElementById('zip-input').addEventListener('change', async (e) => {
     applyFilters();
     updateStatus();
     saveImportMeta('zip', file.name);
+    saveSessionCache();
     await new Promise(r => setTimeout(r, 300));
     hideProgress();
     showToast(`✅ ${processed} şəkil ZIP-dən idxal edildi`);
@@ -2314,7 +2317,7 @@ async function restoreFullBackup(file) {
     }
 
     setProgress(96, 'Tətbiq yenilənir...');
-    await loadFromDB();
+    await loadFromDB(true);
     saveImportMeta('backup-restore', file.name);
 
     setProgress(100, 'Tamamlandı');
@@ -3310,8 +3313,56 @@ function stopCamera() {
   cameraOverlay.classList.remove('open');
 }
 
+// ─────────────────────────────────────────────
+// SƏHİFƏLƏRARASI SÜRƏTLİ KEÇİD ÜÇÜN KEŞ
+// (Excel/şəkil/defekt datası hər səhifə keçidində sıfırdan
+// IndexedDB-dən oxunmasın deyə, yüngül JSON görüntüsü
+// sessionStorage-da saxlanılır və geri qayıdanda ekran
+// gözləmədən ANİ göstərilir, əsl data isə arxa fonda
+// görünmədən yenilənir.)
+// ─────────────────────────────────────────────
+const SESSION_CACHE_KEY = 'anbar_session_cache_v1';
+
+function saveSessionCache() {
+  try {
+    const cache = {
+      savedAt: Date.now(),
+      products: allProducts,
+      imageKeys: Object.keys(imageMap),
+      defectMap: defectMap,
+    };
+    sessionStorage.setItem(SESSION_CACHE_KEY, JSON.stringify(cache));
+  } catch(e) { /* keş yazıla bilmədi — bu kritik deyil, sadəcə sürət qazancı olmayacaq */ }
+}
+
+function loadSessionCache() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.products)) return null;
+    return parsed;
+  } catch(e) { return null; }
+}
+
 // ── LOAD FROM INDEXEDDB ──
-async function loadFromDB() {
+// forceFresh = true olduqda keşdən istifadə edilmir (məs. ehtiyat nüsxə bərpasından sonra).
+async function loadFromDB(forceFresh) {
+  const cache = forceFresh ? null : loadSessionCache();
+
+  if (cache) {
+    // ANİ göstərmə: keşdəki yüngül datanı dərhal ekrana çıxarırıq, spinner göstərmirik.
+    allProducts = cache.products;
+    imageMap = {};
+    (cache.imageKeys || []).forEach(k => { imageMap[k] = []; });
+    defectMap = cache.defectMap || {};
+    buildLocationDropdown();
+    applyFilters();
+    updateStatus();
+    refreshFromDBInBackground();
+    return;
+  }
+
   try {
     showProgress('Yüklənir...', 'Saxlanmış məlumatlar oxunur');
     setProgress(10);
@@ -3321,6 +3372,8 @@ async function loadFromDB() {
     setProgress(55, 'Şəkillər oxunur...');
     const images = await dbGetAll('images');
     images.sort((a, b) => (a.id || 0) - (b.id || 0));
+    Object.values(imageMap).forEach(arr => arr.forEach(u => { if (u) URL.revokeObjectURL(u); }));
+    imageMap = {};
     for (const img of images) {
       try {
         const url = URL.createObjectURL(img.blob);
@@ -3342,7 +3395,42 @@ async function loadFromDB() {
     await new Promise(r => setTimeout(r, 200));
     hideProgress();
     if (!products.length) document.getElementById('status-line').textContent = 'Excel faylı idxal edin';
+    saveSessionCache();
   } catch(err) { hideProgress(); console.warn('DB load error:', err); document.getElementById('status-line').textContent = 'Məlumat yüklənmədi — Excel idxal edin'; }
+}
+
+// Keşdən ani göstəriləndən sonra əsl bazadan görünmədən (spinnersiz) yenilənir.
+async function refreshFromDBInBackground() {
+  try {
+    await openDB();
+    const products = await dbGetAll('products');
+    const images = await dbGetAll('images');
+    images.sort((a, b) => (a.id || 0) - (b.id || 0));
+    const freshImageMap = {};
+    for (const img of images) {
+      try {
+        const url = URL.createObjectURL(img.blob);
+        if (!freshImageMap[img.artikul]) freshImageMap[img.artikul] = [];
+        freshImageMap[img.artikul].push(url);
+      } catch(e) {}
+    }
+    let freshDefectMap = {};
+    try {
+      const defectRecords = await dbGetAll('defects');
+      freshDefectMap = buildDefectMap(defectRecords);
+    } catch(e) {}
+
+    Object.values(imageMap).forEach(arr => arr.forEach(u => { if (u) URL.revokeObjectURL(u); }));
+
+    allProducts = products;
+    imageMap = freshImageMap;
+    defectMap = freshDefectMap;
+    buildLocationDropdown();
+    applyFilters();
+    updateStatus();
+    if (!products.length) document.getElementById('status-line').textContent = 'Excel faylı idxal edin';
+    saveSessionCache();
+  } catch(err) { console.warn('Arxa fon yenilənməsi uğursuz oldu:', err); }
 }
 loadFromDB();
 </script>
