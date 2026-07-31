@@ -1088,7 +1088,7 @@
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
     /* Hidden file inputs */
-    #excel-input, #images-input, #zip-input { display: none; }
+    #excel-input, #images-input, #zip-input, #backup-restore-input { display: none; }
 
     /* Scrollbar */
     ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -1461,11 +1461,33 @@
         </button>
       </div>
 
+      <!-- Ehtiyat nüsxə -->
+      <div class="settings-section-title with-top-gap">💾 Ehtiyat nüsxə</div>
+
+      <div class="import-section">
+        <div class="import-section-title">🗄️ Bütün bazanın ehtiyat nüsxəsi (məhsullar, şəkillər, defektlər)</div>
+        <button class="import-btn" id="backup-download-img-btn">
+          <span class="ib-icon">🖼️</span>
+          <span>Ehtiyat nüsxəni yüklə — şəkilli (.zip)</span>
+        </button>
+        <div class="import-meta" id="backup-download-img-meta"></div>
+        <button class="import-btn" id="backup-download-noimg-btn">
+          <span class="ib-icon">📄</span>
+          <span>Ehtiyat nüsxəni yüklə — şəkilsiz (.zip)</span>
+        </button>
+        <div class="import-meta" id="backup-download-noimg-meta"></div>
+        <button class="import-btn" id="backup-restore-btn">
+          <span class="ib-icon">♻️</span>
+          <span>Ehtiyat nüsxədən bərpa et</span>
+        </button>
+        <div class="import-meta" id="backup-restore-meta"></div>
+      </div>
+
       <!-- Haqqında -->
       <div class="settings-section-title with-top-gap">ℹ️ Haqqında</div>
 
       <div class="about-card">
-        <h2>📦 Elnur PRO - Anbar İdarəetmə PWA (v15.0)</h2>
+        <h2>📦 Elnur PRO - Anbar İdarəetmə PWA (v16.0)</h2>
         <p>Bu tətbiq Elnur Abdullayev tərəfindən hazırlanıb və tam offline işləyir. Program həm mobil həm də PC üçün nəzərdə tutulub. Ekran ölçüsü 900px böyük olanda program atomatik PC moduna keçir. İlk yükləmədən sonra internet bağlantısı olmadan da istifadə edilə bilər. Bütün məlumatlar cihazınızın IndexedDB bazasında saxlanır. Əlaqə üçün: 050-893-46-38</p>
       </div>
       <div class="about-card">
@@ -1577,6 +1599,7 @@
 <input type="file" id="excel-input" accept=".xlsx,.xls">
 <input type="file" id="images-input" multiple webkitdirectory accept="image/*">
 <input type="file" id="zip-input" accept=".zip,.rar">
+<input type="file" id="backup-restore-input" accept=".zip">
 
 <!-- XLSX library -->
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"
@@ -1688,6 +1711,18 @@ function dbGetAll(storeName) {
       const req = tx.objectStore(storeName).getAll();
       req.onsuccess = () => resolve(req.result || []);
       req.onerror = () => reject(req.error);
+    } catch(e) { reject(e); }
+  });
+}
+
+function dbClear(storeName) {
+  return new Promise((resolve, reject) => {
+    if (!db) { resolve(); return; }
+    try {
+      const tx = db.transaction(storeName, 'readwrite');
+      tx.objectStore(storeName).clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
     } catch(e) { reject(e); }
   });
 }
@@ -1856,7 +1891,7 @@ function renderImportMeta(key) {
   } catch (e) { el.textContent = ''; }
 }
 function renderAllImportMeta() {
-  ['excel', 'images', 'zip'].forEach(renderImportMeta);
+  ['excel', 'images', 'zip', 'backup-download-img', 'backup-download-noimg', 'backup-restore'].forEach(renderImportMeta);
 }
 renderAllImportMeta();
 
@@ -2112,6 +2147,205 @@ document.getElementById('zip-input').addEventListener('change', async (e) => {
     setStatusError('ZIP oxunarkən xəta: ' + err.message);
     console.error(err);
   }
+});
+
+// ─────────────────────────────────────────────
+// EHTİYAT NÜSXƏ (BACKUP) — bütün bazanın (bütün object store-lar
+// və localStorage) tam yedəklənməsi və bərpası. Bazaya bağlı digər
+// səhifələrdə əlavə olunan yeni store-lar da (eyni origin/IndexedDB
+// olduğu üçün) avtomatik olaraq bu yedəyə daxil edilir, çünki
+// store siyahısı əldən yazılmır, birbaşa bazadan oxunur.
+// ─────────────────────────────────────────────
+async function exportFullBackup(includeImages) {
+  if (window._jszipLoadFailed || typeof JSZip === 'undefined') {
+    showToast('⚠️ JSZip kitabxanası yüklənməyib. İnternet bağlantısını yoxlayın.');
+    return;
+  }
+  showProgress('Ehtiyat nüsxə hazırlanır...', 'Məlumatlar toplanır');
+  await new Promise(r => setTimeout(r, 30));
+  try {
+    await openDB();
+    const storeNames = Array.from(db.objectStoreNames).filter(name => includeImages || name !== 'images');
+    const manifest = {
+      appName: 'AnbarDB',
+      backupVersion: 1,
+      dbVersion: db.version,
+      createdAt: Date.now(),
+      includesImages: includeImages,
+      stores: {},
+      localStorage: {}
+    };
+    const zip = new JSZip();
+    let blobCounter = 0;
+
+    for (let si = 0; si < storeNames.length; si++) {
+      const storeName = storeNames[si];
+      setProgress(5 + (si / storeNames.length) * 55, `${storeName} oxunur...`);
+      await new Promise(r => setTimeout(r, 0));
+
+      const items = await dbGetAll(storeName);
+      let keyPath = null, autoIncrement = false;
+      try {
+        const tx = db.transaction(storeName, 'readonly');
+        const os = tx.objectStore(storeName);
+        keyPath = os.keyPath;
+        autoIncrement = os.autoIncrement;
+      } catch(e) {}
+
+      const serializedItems = [];
+      for (const item of items) {
+        const clone = {};
+        for (const [k, v] of Object.entries(item)) {
+          if (v instanceof Blob) {
+            const ext = (v.type && v.type.split('/')[1]) || 'bin';
+            const path = `blobs/${storeName}/${blobCounter++}.${ext}`;
+            zip.file(path, v);
+            clone[k] = { __blobRef: path, __blobType: v.type || '' };
+          } else {
+            clone[k] = v;
+          }
+        }
+        serializedItems.push(clone);
+      }
+      manifest.stores[storeName] = { keyPath, autoIncrement, items: serializedItems };
+    }
+
+    setProgress(62, 'Yerli ayarlar toplanır...');
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      manifest.localStorage[k] = localStorage.getItem(k);
+    }
+
+    setProgress(68, 'ZIP faylı yaradılır...');
+    zip.file('manifest.json', JSON.stringify(manifest));
+
+    const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } }, (meta) => {
+      setProgress(68 + (meta.percent * 0.3), `Sıxılır: ${Math.round(meta.percent)}%`);
+    });
+
+    setProgress(100, 'Tamamlandı');
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const stamp = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+    const suffix = includeImages ? 'sekilli' : 'sekilsiz';
+    const fileName = `anbar_yedek_${suffix}_${stamp}.zip`;
+
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    saveImportMeta(includeImages ? 'backup-download-img' : 'backup-download-noimg', fileName);
+    await new Promise(r => setTimeout(r, 300));
+    hideProgress();
+    showToast(includeImages ? '✅ Ehtiyat nüsxə (şəkilli) yükləndi' : '✅ Ehtiyat nüsxə (şəkilsiz) yükləndi');
+  } catch(err) {
+    hideProgress();
+    setStatusError('Ehtiyat nüsxə yaradılarkən xəta: ' + err.message);
+    console.error(err);
+  }
+}
+
+async function restoreFullBackup(file) {
+  if (window._jszipLoadFailed || typeof JSZip === 'undefined') {
+    showToast('⚠️ JSZip kitabxanası yüklənməyib. İnternet bağlantısını yoxlayın.');
+    return;
+  }
+  const sure = window.confirm('Bu əməliyyat cihazdakı bütün mövcud məlumatları (məhsullar, şəkillər, defektlər və s.) ehtiyat nüsxədəki məlumatlarla əvəz edəcək. Davam etmək istəyirsiniz?');
+  if (!sure) return;
+
+  showProgress('Ehtiyat nüsxə oxunur...', file.name);
+  await new Promise(r => setTimeout(r, 30));
+  try {
+    const buf = await file.arrayBuffer();
+    setProgress(10, 'ZIP açılır...');
+    const zip = await JSZip.loadAsync(buf);
+
+    const manifestEntry = zip.file('manifest.json');
+    if (!manifestEntry) throw new Error('manifest.json tapılmadı — fayl düzgün ehtiyat nüsxə deyil');
+    setProgress(20, 'Manifest oxunur...');
+    const manifest = JSON.parse(await manifestEntry.async('string'));
+
+    await openDB();
+    const existingStores = new Set(Array.from(db.objectStoreNames));
+    const storeNames = Object.keys(manifest.stores || {});
+    const skipped = [];
+
+    for (let si = 0; si < storeNames.length; si++) {
+      const storeName = storeNames[si];
+      setProgress(25 + (si / storeNames.length) * 65, `${storeName} bərpa edilir...`);
+      if (!existingStores.has(storeName)) { skipped.push(storeName); continue; }
+
+      const storeDef = manifest.stores[storeName];
+      await dbClear(storeName);
+
+      const restoredItems = [];
+      for (const item of storeDef.items) {
+        const resolved = {};
+        for (const [k, v] of Object.entries(item)) {
+          if (v && typeof v === 'object' && v.__blobRef) {
+            const entry = zip.file(v.__blobRef);
+            if (entry) {
+              const uint8 = await entry.async('uint8array');
+              resolved[k] = new Blob([uint8], { type: v.__blobType || 'application/octet-stream' });
+            } else {
+              resolved[k] = null;
+            }
+          } else {
+            resolved[k] = v;
+          }
+        }
+        restoredItems.push(resolved);
+      }
+
+      const BATCH = 300;
+      for (let i = 0; i < restoredItems.length; i += BATCH) {
+        await dbPutAll(storeName, restoredItems.slice(i, i + BATCH));
+      }
+    }
+
+    setProgress(92, 'Yerli ayarlar bərpa edilir...');
+    if (manifest.localStorage) {
+      for (const [k, v] of Object.entries(manifest.localStorage)) {
+        try { localStorage.setItem(k, v); } catch(e) {}
+      }
+    }
+
+    setProgress(96, 'Tətbiq yenilənir...');
+    await loadFromDB();
+    saveImportMeta('backup-restore', file.name);
+
+    setProgress(100, 'Tamamlandı');
+    await new Promise(r => setTimeout(r, 300));
+    hideProgress();
+    if (skipped.length) {
+      showToast('✅ Bərpa tamamlandı (bəzi köhnə store-lar keçildi: ' + skipped.join(', ') + ')');
+    } else {
+      showToast('✅ Ehtiyat nüsxədən bərpa tamamlandı');
+    }
+  } catch(err) {
+    hideProgress();
+    setStatusError('Bərpa edilərkən xəta: ' + err.message);
+    console.error(err);
+  }
+}
+
+document.getElementById('backup-download-img-btn').addEventListener('click', () => exportFullBackup(true));
+document.getElementById('backup-download-noimg-btn').addEventListener('click', () => exportFullBackup(false));
+document.getElementById('backup-restore-btn').addEventListener('click', () => {
+  document.getElementById('backup-restore-input').click();
+});
+document.getElementById('backup-restore-input').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  if (!/\.zip$/i.test(file.name)) {
+    showToast('⚠️ Yalnız .zip formatlı ehtiyat nüsxə dəstəklənir.');
+    return;
+  }
+  await restoreFullBackup(file);
 });
 
 // ─────────────────────────────────────────────
