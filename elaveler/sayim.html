@@ -194,6 +194,7 @@
   </div>
   <div class="hdr-actions">
     <button class="icon-btn" id="globalSearchBtn" title="Ümumi axtarış">🔍</button>
+    <button class="icon-btn" id="soundToggleBtn" title="Səsli bildirişlər">🔊</button>
     <button class="icon-btn theme-toggle-btn" id="themeToggleBtn" title="Tema dəyiş">🌙</button>
   </div>
 </header>
@@ -524,7 +525,46 @@ function showToast(msg, kind){
   t.className='toast show '+(kind||'ok');
   clearTimeout(toastTimer);
   toastTimer=setTimeout(function(){ t.className='toast '+(kind||'ok'); }, 2200);
+  speak(msg, kind);
 }
+
+/* ===================== SƏSLİ/HAPTİK BİLDİRİŞ ===================== */
+var soundOn=true;
+var audioCtx=null;
+function beep(kind){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    var o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type='sine';
+    o.frequency.value = kind==='warn' ? 320 : 880;
+    g.gain.value=0.0001;
+    o.connect(g); g.connect(audioCtx.destination);
+    var t=audioCtx.currentTime;
+    g.gain.exponentialRampToValueAtTime(0.18, t+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+0.13);
+    o.start(t); o.stop(t+0.14);
+  }catch(e){}
+}
+function speak(text, kind){
+  if(!soundOn) return;
+  beep(kind);
+  if(navigator.vibrate){ try{ navigator.vibrate(kind==='warn' ? [25,40,25] : 20); }catch(e){} }
+}
+function applySound(on){
+  soundOn = !!on;
+  $('soundToggleBtn').textContent = soundOn ? '🔊' : '🔇';
+  try{ localStorage.setItem('anbarSayimiSound', soundOn ? '1' : '0'); }catch(e){}
+}
+$('soundToggleBtn').addEventListener('click', function(){
+  applySound(!soundOn);
+  if(soundOn) speak('','ok');
+});
+(function initSound(){
+  var saved='1';
+  try{ saved = localStorage.getItem('anbarSayimiSound'); if(saved===null) saved='1'; }catch(e){}
+  applySound(saved==='1');
+})();
 
 /* ===================== INDEXEDDB ===================== */
 var DB_NAME='AnbarSayimiDB', DB_VERSION=1, dbPromise=null;
