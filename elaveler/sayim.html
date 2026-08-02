@@ -492,6 +492,23 @@
   </div>
 </div>
 
+<!-- Manual (əl ilə yazılan) əlavə: miqdar soruşulur -->
+<div class="overlay center" id="manualQtyOverlay">
+  <div class="modal">
+    <h3 id="manualQtyName">-</h3>
+    <p class="sub" id="manualQtyCodes">-</p>
+    <div class="qty-row">
+      <button class="qty-btn" id="manualQtyMinus">−</button>
+      <input class="qty-edit-input" id="manualQtyInput" type="number" inputmode="numeric" min="1" step="1" value="1">
+      <button class="qty-btn" id="manualQtyPlus">+</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="manualQtyCancelBtn">Ləğv et</button>
+      <button class="btn btn-accent" id="manualQtyAddBtn">Siyahıya əlavə et</button>
+    </div>
+  </div>
+</div>
+
 <!-- Image preview modal -->
 <div class="overlay center" id="imgPreviewOverlay">
   <div class="modal">
@@ -630,6 +647,11 @@ var state={
   notFoundModalOpen:false,
   pendingDeleteId:null,
   editingRowId:null, editingRowQty:1,
+  scanStartTs:null, /* timestamp of first char typed into #scanInput - used to
+                        tell a hardware/physical barcode scanner (very fast,
+                        near-simultaneous keystrokes) apart from a person
+                        typing by hand (slow keystrokes) */
+  pendingManualProduct:null, /* product waiting for a manually-entered qty */
   resultsFilter:'all', resultsSearch:'',
   html5Qrcode:null, cameraOn:false, lastCamCode:null, lastCamTs:0,
   theme:'dark',
@@ -1139,6 +1161,21 @@ function renderCountView(){
   $('activeDocBadge').className='badge '+(d.status==='open'?'open':'closed');
   $('toggleDocStatusBtn').textContent = d.status==='open' ? 'Bağla' : 'Yenidən aç';
   renderCountList();
+  focusScanInput();
+}
+
+/* Puts keyboard focus into #scanInput automatically, so that opening/creating
+   a sayım sənədi is enough for a handheld/USB barcode scanner (which just
+   "types" into whatever input currently has focus) to start adding rows -
+   without the user having to tap into the search field first. */
+function focusScanInput(){
+  if(!state.activeDoc) return;
+  if(state.notFoundModalOpen) return;
+  var input=$('scanInput');
+  if(!input) return;
+  requestAnimationFrame(function(){
+    try{ input.focus({preventScroll:true}); }catch(e){ input.focus(); }
+  });
 }
 
 function persistActiveDoc(){
@@ -1220,18 +1257,45 @@ function renderCountList(){
   requestAnimationFrame(function(){ mainEl.scrollTop = mainEl.scrollHeight; });
 }
 
-/* --- scan input handling --- */
-$('scanInput').addEventListener('focus', function(){ $('scanWrap').classList.add('focused'); });
+/* --- scan input handling ---
+   A handheld/USB/Bluetooth barcode scanner works as a "keyboard wedge": it
+   types every character of the code within a few milliseconds of each other
+   and then sends Enter automatically, all far faster than a human could
+   type. We use that timing gap to tell a real scan apart from someone
+   typing the code by hand, WITHOUT needing any extra button or mode toggle:
+     - fast entry (scanner)  -> row is added immediately with qty = 1
+     - slow entry (by hand)  -> a modal asks how many pieces to add first
+   Threshold: scanners are typically well under 20ms/char; 40ms/char gives a
+   safe margin while still being far faster than manual typing. */
+var SCAN_MAX_MS_PER_CHAR = 40;
+$('scanInput').addEventListener('focus', function(){
+  $('scanWrap').classList.add('focused');
+  state.scanStartTs=null;
+});
 $('scanInput').addEventListener('blur', function(){ $('scanWrap').classList.remove('focused'); });
+$('scanInput').addEventListener('input', function(){
+  /* Runs on every keystroke (not debounced) purely to time the sequence. */
+  if(state.notFoundModalOpen) return;
+  var val=$('scanInput').value;
+  if(val.length<=1){ state.scanStartTs=Date.now(); }
+});
 $('scanInput').addEventListener('keydown', function(e){
   if(state.notFoundModalOpen){ e.preventDefault(); return; }
   if(e.key==='Enter'){
     e.preventDefault();
     var val=norm($('scanInput').value);
-    if(!val) return;
+    if(!val){ return; }
     $('searchSheetOverlay').classList.remove('active');
-    handleScan(val);
+    var elapsed = state.scanStartTs ? (Date.now()-state.scanStartTs) : Infinity;
+    var msPerChar = elapsed / Math.max(val.length, 1);
+    var looksLikeScanner = val.length>=3 && msPerChar<=SCAN_MAX_MS_PER_CHAR;
     $('scanInput').value='';
+    state.scanStartTs=null;
+    if(looksLikeScanner){
+      handleScan(val);
+    } else {
+      handleManualCode(val);
+    }
   }
 });
 $('scanInput').addEventListener('input', debounce(function(){
@@ -1263,7 +1327,8 @@ function renderSearchSheet(results){
       div.querySelector('.ri-main').addEventListener('click', function(){
         $('searchSheetOverlay').classList.remove('active');
         $('scanInput').value='';
-        handleScanProduct(p);
+        state.scanStartTs=null;
+        promptManualQty(p);
       });
       var imgBtn=div.querySelector('[data-act="img"]');
       if(imgBtn){
@@ -1286,17 +1351,73 @@ function handleScan(code){
   if(!state.activeDoc){ showToast('Əvvəlcə sənəd açın','warn'); return; }
   var product=findProductByCode(code);
   if(!product){ showNotFound(code); return; }
-  handleScanProduct(product);
+  handleScanProduct(product, 1);
 }
-function handleScanProduct(product){
+function handleScanProduct(product, qty){
   if(state.notFoundModalOpen) return;
   if(!state.activeDoc){ showToast('Əvvəlcə sənəd açın','warn'); return; }
-  var row=addCountRow(state.activeDoc, product, 1);
+  var row=addCountRow(state.activeDoc, product, qty||1);
   persistActiveDoc().then(function(){
     renderCountList();
     showToast(product.name+' sayıldı (#'+row.seq+')','ok');
+    focusScanInput();
   });
 }
+
+/* Code was typed by hand (slow keystrokes) and Enter was pressed - find the
+   product, then ask how many pieces before adding anything to the list. */
+function handleManualCode(code){
+  if(state.notFoundModalOpen) return;
+  if(!state.activeDoc){ showToast('Əvvəlcə sənəd açın','warn'); return; }
+  var product=findProductByCode(code);
+  if(!product){ showNotFound(code); return; }
+  promptManualQty(product);
+}
+
+/* --- manual-entry quantity prompt --- */
+function promptManualQty(product){
+  state.pendingManualProduct=product;
+  $('manualQtyName').textContent=product.name||'(naməlum)';
+  $('manualQtyCodes').textContent=(product.artikul||'')+(product.artikul && product.barcode?' · ':'')+(product.barcode||'');
+  $('manualQtyInput').value=1;
+  $('manualQtyOverlay').classList.add('active');
+  requestAnimationFrame(function(){ $('manualQtyInput').focus(); $('manualQtyInput').select(); });
+}
+function closeManualQtyModal(){
+  $('manualQtyOverlay').classList.remove('active');
+  state.pendingManualProduct=null;
+  focusScanInput();
+}
+function syncManualQtyFromInput(){
+  var v=parseInt($('manualQtyInput').value,10);
+  if(isNaN(v) || v<1) v=1;
+  $('manualQtyInput').value=v;
+  return v;
+}
+$('manualQtyMinus').addEventListener('click', function(){
+  var v=syncManualQtyFromInput();
+  v=Math.max(1, v-1);
+  $('manualQtyInput').value=v;
+});
+$('manualQtyPlus').addEventListener('click', function(){
+  var v=syncManualQtyFromInput();
+  $('manualQtyInput').value=v+1;
+});
+$('manualQtyInput').addEventListener('input', function(){ syncManualQtyFromInput(); });
+$('manualQtyInput').addEventListener('keydown', function(e){
+  if(e.key==='Enter'){ e.preventDefault(); $('manualQtyAddBtn').click(); }
+});
+$('manualQtyCancelBtn').addEventListener('click', function(){ closeManualQtyModal(); });
+$('manualQtyOverlay').addEventListener('click', function(e){
+  if(e.target===$('manualQtyOverlay')) closeManualQtyModal();
+});
+$('manualQtyAddBtn').addEventListener('click', function(){
+  var qty=syncManualQtyFromInput();
+  var product=state.pendingManualProduct;
+  $('manualQtyOverlay').classList.remove('active');
+  state.pendingManualProduct=null;
+  if(product){ handleScanProduct(product, qty); } else { focusScanInput(); }
+});
 
 /* not-found modal: stays open until manually closed. While it is open the
    scan input is disabled and the camera decode loop ignores new codes, so a
@@ -1312,6 +1433,7 @@ function showNotFound(code){
 }
 $('notFoundCloseBtn').addEventListener('click', function(){
   state.notFoundModalOpen=false;
+  state.scanStartTs=null;
   $('notFoundModal').classList.remove('active');
   var input=$('scanInput');
   input.disabled=false;
