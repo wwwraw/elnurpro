@@ -16,6 +16,8 @@
     --danger:#FF5C5C; --danger-dim:#2E1414;
     --info:#4DA3FF; --info-dim:#12202E;
     --border:#2E333B;
+    --sys-green:#3FA35B;
+    --confirm-bg:rgba(255,209,0,.30);
     --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
     --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
   }
@@ -27,6 +29,8 @@
     --danger:#D93A3A; --danger-dim:#FBE0E0;
     --info:#2470C9; --info-dim:#DCEBFC;
     --border:#DEE1E6;
+    --sys-green:#1B5E20;
+    --confirm-bg:rgba(255,193,7,.40);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
@@ -110,6 +114,7 @@
   .count-row .cd{font-size:10.5px; color:var(--text-dim); font-family:var(--mono); margin-top:2px;}
   .count-row .prevtag{display:inline-block; margin-top:3px; font-size:10px; font-family:var(--mono); color:var(--info); background:var(--info-dim); border-radius:6px; padding:2px 6px;}
   .count-row .qty{font-family:var(--mono); font-size:17px; font-weight:700; flex:0 0 auto; min-width:30px; text-align:right;}
+  .sys-stock{color:var(--sys-green); font-weight:700;}
 
   .result-item{display:flex; align-items:center; gap:10px; padding:12px; border:1px solid var(--border); border-radius:10px; background:var(--panel); margin-bottom:8px;}
   .ri-main{flex:1; min-width:0;}
@@ -140,6 +145,10 @@
   table.res-table td{padding:8px 5px; border-bottom:1px solid var(--border); vertical-align:top;}
   table.res-table td.num{font-family:var(--mono); text-align:right; white-space:nowrap;}
   .row-diff-neg{color:var(--danger); font-weight:700;} .row-diff-pos{color:var(--info); font-weight:700;} .row-diff-zero{color:var(--ok);}
+  table.res-table td.confirm-td{text-align:center; white-space:nowrap;}
+  table.res-table input.confirm-chk{width:17px; height:17px; vertical-align:middle;}
+  table.res-table tr.row-confirmed td{background:var(--confirm-bg);}
+  .sort-field{margin-bottom:12px;}
 
   .doc-item{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:13px; margin-bottom:10px;}
   .doc-item .top{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
@@ -320,6 +329,16 @@
           <div class="chip active" data-filter="all">Hamısı</div>
           <div class="chip" data-filter="extra">Artıqlar</div>
           <div class="chip" data-filter="missing">Əskiklər</div>
+          <div class="chip" data-filter="extramissing">Artıqlar+Əskiklər</div>
+        </div>
+        <div class="field sort-field">
+          <label class="field-label">Sırala</label>
+          <select id="resultsSortSelect">
+            <option value="name_asc">Ad (A-Z)</option>
+            <option value="name_desc">Ad (Z-A)</option>
+            <option value="diff_asc">Fərq (Azdan-Çoxa)</option>
+            <option value="diff_desc">Fərq (Çoxdan-Aza)</option>
+          </select>
         </div>
         <div class="summary-grid">
           <div class="cell"><div class="n" id="rsTotal">0</div><div class="l">Cəmi</div></div>
@@ -329,7 +348,7 @@
         </div>
         <div style="overflow-x:auto;">
           <table class="res-table">
-            <thead><tr><th>№</th><th>Ad</th><th>Artikul</th><th class="num">Sistem</th><th class="num">Sayılan</th><th class="num">Fərq</th><th class="num">Satış qiy.</th><th class="num">Alış qiy.</th></tr></thead>
+            <thead><tr><th style="width:30px;"></th><th>№</th><th>Ad</th><th>Artikul</th><th class="num">Sistem</th><th class="num">Sayılan</th><th class="num">Fərq</th><th class="num">Satış qiy.</th><th class="num">Alış qiy.</th></tr></thead>
             <tbody id="resultsBody"></tbody>
           </table>
         </div>
@@ -365,6 +384,16 @@
         <div class="chip active" data-filter="all">Hamısı</div>
         <div class="chip" data-filter="extra">Artıqlar</div>
         <div class="chip" data-filter="missing">Əskiklər</div>
+        <div class="chip" data-filter="extramissing">Artıqlar+Əskiklər</div>
+      </div>
+      <div class="field sort-field">
+        <label class="field-label">Sırala</label>
+        <select id="umumiSortSelect">
+          <option value="name_asc">Ad (A-Z)</option>
+          <option value="name_desc">Ad (Z-A)</option>
+          <option value="diff_asc">Fərq (Azdan-Çoxa)</option>
+          <option value="diff_desc">Fərq (Çoxdan-Aza)</option>
+        </select>
       </div>
       <div class="summary-grid">
         <div class="cell"><div class="n" id="umTotal">0</div><div class="l">Cəmi</div></div>
@@ -374,7 +403,7 @@
       </div>
       <div style="overflow-x:auto;">
         <table class="res-table">
-          <thead><tr><th>№</th><th>Ad</th><th>Artikul</th><th class="num">Sistem</th><th class="num">Sayılan</th><th class="num">Fərq</th><th class="num">Satış qiy.</th><th class="num">Alış qiy.</th></tr></thead>
+          <thead><tr><th style="width:30px;"></th><th>№</th><th>Ad</th><th>Artikul</th><th class="num">Sistem</th><th class="num">Sayılan</th><th class="num">Fərq</th><th class="num">Satış qiy.</th><th class="num">Alış qiy.</th></tr></thead>
           <tbody id="umumiBody"></tbody>
         </table>
       </div>
@@ -531,7 +560,7 @@ function showToast(msg, kind){
 }
 
 /* ===================== INDEXEDDB ===================== */
-var DB_NAME='AnbarSayimiDB', DB_VERSION=1, dbPromise=null;
+var DB_NAME='AnbarSayimiDB', DB_VERSION=2, dbPromise=null;
 function openDB(){
   if(dbPromise) return dbPromise;
   dbPromise=new Promise(function(resolve,reject){
@@ -541,6 +570,12 @@ function openDB(){
       if(!db.objectStoreNames.contains('products')) db.createObjectStore('products',{keyPath:'artikul'});
       if(!db.objectStoreNames.contains('images')) db.createObjectStore('images',{keyPath:'artikul'});
       if(!db.objectStoreNames.contains('documents')) db.createObjectStore('documents',{keyPath:'id'});
+      /* 'meta' is a small generic key-value store used to persist app-wide
+         settings that aren't tied to a single document — currently the
+         "Ümumi Nəticə" (combined results) təsdiq (✔) checkbox map, so those
+         confirmations survive closing/reopening the app, same as the
+         per-document Nəticə confirmations already do. */
+      if(!db.objectStoreNames.contains('meta')) db.createObjectStore('meta',{keyPath:'key'});
     };
     req.onsuccess=function(){ resolve(req.result); };
     req.onerror=function(){ reject(req.error); };
@@ -594,11 +629,19 @@ var state={
   notFoundModalOpen:false,
   pendingDeleteId:null,
   editingRowId:null, editingRowQty:1,
-  resultsFilter:'all', resultsSearch:'',
+  resultsFilter:'all', resultsSearch:'', resultsSort:'name_asc',
   html5Qrcode:null, cameraOn:false, lastCamCode:null, lastCamTs:0,
   theme:'dark', soundEnabled:true,
-  umumi:{ selectedDocIds:{}, importedFiles:[], filter:'all', search:'' }
+  umumi:{ selectedDocIds:{}, importedFiles:[], filter:'all', search:'', sort:'name_asc', confirmedRows:{} }
 };
+
+/* Persists state.umumi.confirmedRows (the təsdiq/✔ checkboxes on the "Ümumi
+   Nəticə" page) into the 'meta' IndexedDB store, so — unlike before — they
+   survive closing and reopening the app, exactly like the per-document
+   Nəticə confirmations already do. */
+function saveUmumiConfirmed(){
+  return idbPut('meta', {key:'umumiConfirmedRows', value: state.umumi.confirmedRows||{}}).catch(function(){});
+}
 
 function rebuildProductIndex(){
   state.byArtikul={}; state.byBarcode={};
@@ -614,6 +657,14 @@ function findProductByCode(code){
   code=norm(code);
   if(!code) return null;
   return state.byBarcode[code] || state.byArtikul[code] || null;
+}
+/* Looks up the CURRENT system quantity for a counted row from the presently
+   loaded base (falls back to the quantity that was snapshotted on the row at
+   scan time if the product can no longer be found in the base). Used to show
+   a live "system qalığı" hint next to the artikul while counting. */
+function getCurrentSysQty(row){
+  var p = (row.artikul && state.byArtikul[row.artikul]) || (row.barcode && state.byBarcode[row.barcode]) || null;
+  return p ? (p.sysQty||0) : (row.sys||0);
 }
 function searchProducts(q){
   q=normLower(q);
@@ -1118,8 +1169,16 @@ function setActiveDoc(id){
 
 /* ===================== BACKUP / RESTORE ===================== */
 $('backupBtn').addEventListener('click', function(){
-  idbGetAll('documents').then(function(docs){
-    var payload={version:1, exportedAt:Date.now(), documents:docs};
+  Promise.all([
+    idbGetAll('documents'),
+    idbGet('meta','umumiConfirmedRows').catch(function(){ return null; })
+  ]).then(function(res){
+    var docs=res[0]||[];
+    var umumiConfirmedRows=(res[1] && res[1].value) || state.umumi.confirmedRows || {};
+    /* version:2 also carries the "Ümumi Nəticə" təsdiq (✔) map, so it is
+       preserved on restore just like each document's own confirmedRows
+       (which already travels inside the document object itself). */
+    var payload={version:2, exportedAt:Date.now(), documents:docs, umumiConfirmedRows:umumiConfirmedRows};
     var blob=new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
     var a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
@@ -1143,12 +1202,31 @@ $('restoreFileInput').addEventListener('change', function(e){
         copy.id=uid();
         copy.updatedAt=Date.now();
         if(!copy.items) copy.items=[];
+        /* copy.confirmedRows (the per-document Nəticə təsdiq/✔ map) travels
+           along untouched inside the deep-cloned document object above, so
+           those checkmarks are restored exactly as they were. */
+        if(!copy.confirmedRows) copy.confirmedRows={};
         return copy;
       });
+      /* Merge the restored file's "Ümumi Nəticə" təsdiq map (if the backup
+         has one) into whatever is already saved, rather than overwriting it —
+         restoring shouldn't erase confirmations made since that backup was
+         taken. Keys are product artikul/barcode based, not document ids, so
+         they stay meaningful even though the documents above just got new ids. */
+      var restoredUmumiConfirmed=payload.umumiConfirmedRows||{};
       idbBulkPut('documents', newDocs).then(function(){
         return loadAllDocs();
       }).then(function(){
+        if(!state.umumi.confirmedRows) state.umumi.confirmedRows={};
+        Object.keys(restoredUmumiConfirmed).forEach(function(k){
+          if(restoredUmumiConfirmed[k]) state.umumi.confirmedRows[k]=true;
+        });
+        return saveUmumiConfirmed();
+      }).then(function(){
         renderDocList();
+        if(document.querySelector('.view.active') && document.querySelector('.view.active').getAttribute('data-view')==='umumi'){
+          renderUmumiTable();
+        }
         showToast(newDocs.length+' sənəd bərpa edildi','ok');
       });
     }catch(err){
@@ -1252,10 +1330,13 @@ function renderCountList(){
     var div=document.createElement('div');
     div.className='count-row';
     var prevTag = buildPrevTagsForRow(doc, idx);
+    var sysQty = getCurrentSysQty(row);
+    var codeText = escapeHtml(row.artikul||row.barcode||'');
+    var sysHtml = codeText ? ' <span class="sys-stock">- ('+sysQty+' əd)</span>' : '';
     div.innerHTML =
       '<div class="seq">#'+row.seq+'</div>'+
       '<div class="main"><div class="nm">'+escapeHtml(row.name)+'</div>'+
-      '<div class="cd">'+escapeHtml(row.artikul||row.barcode||'')+'</div>'+prevTag+'</div>'+
+      '<div class="cd">'+codeText+sysHtml+'</div>'+prevTag+'</div>'+
       '<div class="qty">'+row.qty+'</div>';
     div.addEventListener('click', function(){ openEditRow(row.id); });
     wrap.appendChild(div);
@@ -1545,9 +1626,26 @@ function computeAggregatedRows(doc){
     var price = current ? current.salePrice : r.salePrice;
     var alisPrice = current ? current.alisPrice : r.alisPrice;
     var inBase = !!current;
-    out.push({name:r.name, artikul:r.artikul, barcode:r.barcode, sys:sys, counted:r.counted, diff:(r.counted-sys), salePrice:price, alisPrice:(alisPrice||0), inBase:inBase});
+    out.push({name:r.name, artikul:r.artikul, barcode:r.barcode, sys:sys, counted:r.counted, diff:(r.counted-sys), salePrice:price, alisPrice:(alisPrice||0), inBase:inBase, key:k});
   });
   out.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
+  return out;
+}
+
+/* Sorts a computed rows array (results / ümumi nəticə) according to a sort
+   spec value coming from the "Sırala" dropdowns: name_asc, name_desc,
+   diff_asc, diff_desc. Returns a NEW array (does not mutate the input). */
+function sortRowsList(rows, sortValue){
+  var out = rows.slice();
+  if(sortValue==='diff_asc'){
+    out.sort(function(a,b){ return (a.diff||0)-(b.diff||0); });
+  }else if(sortValue==='diff_desc'){
+    out.sort(function(a,b){ return (b.diff||0)-(a.diff||0); });
+  }else if(sortValue==='name_desc'){
+    out.sort(function(a,b){ return (b.name||'').localeCompare(a.name||'','az',{sensitivity:'base'}); });
+  }else{
+    out.sort(function(a,b){ return (a.name||'').localeCompare(b.name||'','az',{sensitivity:'base'}); });
+  }
   return out;
 }
 
@@ -1561,32 +1659,40 @@ function renderResultsView(){
   $('resultsArea').style.display='block';
   $('resultsDocTitle').textContent=state.activeDoc.part||'(başlıqsız)';
   $('resultsDocMeta').textContent=fmtDateAz(state.activeDoc.date)+' · '+(state.activeDoc.time||'');
+  $('resultsSortSelect').value=state.resultsSort;
   renderResultsTable();
 }
 function renderResultsTable(){
   var doc=state.activeDoc;
   if(!doc) return;
+  if(!doc.confirmedRows) doc.confirmedRows={};
   var rows=computeAggregatedRows(doc);
   var q=state.resultsSearch;
   var filtered=rows.filter(function(r){
     if(q && normLower(r.name).indexOf(q)===-1 && normLower(r.artikul).indexOf(q)===-1) return false;
     if(state.resultsFilter==='extra') return r.diff>0;
     if(state.resultsFilter==='missing') return r.diff<0;
+    if(state.resultsFilter==='extramissing') return r.diff!==0;
     return true;
   });
+  filtered=sortRowsList(filtered, state.resultsSort);
   $('rsTotal').textContent=rows.length;
   $('rsCounted').textContent=rows.filter(function(r){return r.counted>0;}).length;
   $('rsExtraCnt').textContent=rows.filter(function(r){return r.diff>0;}).length;
   $('rsMissingCnt').textContent=rows.filter(function(r){return r.diff<0;}).length;
   var tbody=$('resultsBody'); tbody.innerHTML='';
   if(filtered.length===0){
-    tbody.innerHTML='<tr><td colspan="8" style="text-align:center; color:var(--text-faint); padding:18px;">Nəticə yoxdur</td></tr>';
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center; color:var(--text-faint); padding:18px;">Nəticə yoxdur</td></tr>';
     return;
   }
+  var confirmedMap=doc.confirmedRows;
   filtered.forEach(function(r, idx){
     var diffClass = r.diff===0?'row-diff-zero':(r.diff>0?'row-diff-pos':'row-diff-neg');
+    var isConfirmed = !!confirmedMap[r.key];
     var tr=document.createElement('tr');
-    tr.innerHTML='<td class="num">'+(idx+1)+'</td><td>'+escapeHtml(r.name)+'</td><td style="font-family:var(--mono); font-size:10.5px;">'+escapeHtml(r.artikul||r.barcode||'')+'</td>'+
+    if(isConfirmed) tr.className='row-confirmed';
+    tr.innerHTML='<td class="confirm-td"><input type="checkbox" class="confirm-chk" data-key="'+escapeHtml(r.key||'')+'"'+(isConfirmed?' checked':'')+'></td>'+
+      '<td class="num">'+(idx+1)+'</td><td>'+escapeHtml(r.name)+'</td><td style="font-family:var(--mono); font-size:10.5px;">'+escapeHtml(r.artikul||r.barcode||'')+'</td>'+
       '<td class="num">'+r.sys+'</td><td class="num">'+r.counted+'</td>'+
       '<td class="num '+diffClass+'">'+(r.diff>0?'+':'')+r.diff+'</td>'+
       '<td class="num">'+(r.salePrice?r.salePrice.toFixed(2):'-')+'</td>'+
@@ -1606,21 +1712,154 @@ document.querySelectorAll('[data-view="results"] .chip').forEach(function(c){
     renderResultsTable();
   });
 });
+$('resultsSortSelect').addEventListener('change', function(){
+  state.resultsSort=$('resultsSortSelect').value;
+  renderResultsTable();
+});
+$('resultsBody').addEventListener('change', function(e){
+  var chk=e.target.closest('.confirm-chk');
+  if(!chk || !state.activeDoc) return;
+  if(!state.activeDoc.confirmedRows) state.activeDoc.confirmedRows={};
+  var key=chk.getAttribute('data-key');
+  if(chk.checked) state.activeDoc.confirmedRows[key]=true; else delete state.activeDoc.confirmedRows[key];
+  var tr=chk.closest('tr');
+  if(tr) tr.classList.toggle('row-confirmed', chk.checked);
+  persistActiveDoc();
+});
 $('exportResultsBtn').addEventListener('click', function(){
   if(!state.activeDoc) return;
-  var rows=computeAggregatedRows(state.activeDoc);
-  exportRowsToExcel(rows, 'neticesi-'+dateStamp()+'.xlsx', 'Neticesi');
+  var rows=sortRowsList(computeAggregatedRows(state.activeDoc), state.resultsSort);
+  exportRowsToExcel(rows, 'neticesi-'+dateStamp()+'.xlsx', 'Neticesi', state.activeDoc.confirmedRows||{});
 });
 
-function exportRowsToExcel(rows, filename, sheetName){
-  var aoa=[['№','Ad','Artikul','Barkod','Sistem qalığı','Sayılan','Fərq','Satış qiyməti','Alış qiyməti']];
-  rows.forEach(function(r,idx){ aoa.push([idx+1, r.name, r.artikul, r.barcode, r.sys, r.counted, r.diff, r.salePrice||0, r.alisPrice||0]); });
+/* Exports an array of computed result rows (see computeAggregatedRows /
+   computeUmumiRows) to an .xlsx file. If confirmedSet is given (a map of
+   row.key -> true, coming from the "təsdiq" checkboxes in the Nəticə /
+   Ümumi Nəticə tables), a "Təsdiq" column with a ✔ mark is added AND the
+   whole row is highlighted with a yellow fill in the exported file, mirroring
+   exactly what the person sees (and already double-checked) on screen. */
+function exportRowsToExcel(rows, filename, sheetName, confirmedSet){
+  confirmedSet = confirmedSet || {};
+  var aoa=[['Təsdiq','№','Ad','Artikul','Barkod','Sistem qalığı','Sayılan','Fərq','Satış qiyməti','Alış qiyməti']];
+  var confirmedRowNumbers=[];
+  rows.forEach(function(r,idx){
+    var isConfirmed = !!confirmedSet[r.key];
+    if(isConfirmed) confirmedRowNumbers.push(idx+2); /* +1 header row, +1 to go from 0-based to 1-based */
+    aoa.push([isConfirmed?'✔':'', idx+1, r.name, r.artikul, r.barcode, r.sys, r.counted, r.diff, r.salePrice||0, r.alisPrice||0]);
+  });
   var ws=XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols']=[{wch:5},{wch:30},{wch:14},{wch:16},{wch:12},{wch:10},{wch:8},{wch:12},{wch:12}];
+  ws['!cols']=[{wch:8},{wch:5},{wch:30},{wch:14},{wch:16},{wch:12},{wch:10},{wch:8},{wch:12},{wch:12}];
   var wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
-  XLSX.writeFile(wb, filename);
-  showToast('Fayl endirildi: '+filename,'ok');
+
+  var finish=function(){ showToast('Fayl endirildi: '+filename,'ok'); };
+  var fallbackPlain=function(){ XLSX.writeFile(wb, filename); finish(); };
+
+  if(!confirmedRowNumbers.length){
+    fallbackPlain();
+    return;
+  }
+  var arrbuf;
+  try{
+    arrbuf = XLSX.write(wb, {type:'array', bookType:'xlsx'});
+  }catch(err){
+    fallbackPlain();
+    return;
+  }
+  buildHighlightedXlsxBlob(arrbuf, confirmedRowNumbers).then(function(blob){
+    if(!blob){ fallbackPlain(); return; }
+    downloadBlob(blob, filename);
+    finish();
+  }).catch(function(){
+    fallbackPlain();
+  });
+}
+
+function downloadBlob(blob, filename){
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+}
+
+/* Takes the raw .xlsx ArrayBuffer produced by XLSX.write() and post-processes
+   the underlying OOXML package (using JSZip, already loaded for the image
+   ZIP feature) to add a yellow "solid fill" cell style and apply it to every
+   cell of the given 1-based row numbers on the first worksheet. This is
+   necessary because the bundled SheetJS Community build can WRITE data but
+   does not support writing cell background styles — so we patch the
+   generated styles.xml / sheet xml directly. Resolves to a Blob, or to null
+   if the package didn't have the expected structure (caller falls back to a
+   plain, unstyled export in that case). */
+function buildHighlightedXlsxBlob(arrbuf, confirmedRowNumbers){
+  return JSZip.loadAsync(arrbuf).then(function(zip){
+    var stylesPath='xl/styles.xml';
+    var sheetPath='xl/worksheets/sheet1.xml';
+    var stylesFile=zip.file(stylesPath);
+    var sheetFile=zip.file(sheetPath);
+    if(!stylesFile || !sheetFile) return null;
+    return Promise.all([stylesFile.async('string'), sheetFile.async('string')]).then(function(res){
+      var stylesXml=res[0], sheetXml=res[1];
+
+      var fillsBump=bumpXmlCount(stylesXml,'fills');
+      if(fillsBump.index===-1) return null;
+      var newFillXml='<fill><patternFill patternType="solid"><fgColor rgb="FFFFF176"/><bgColor indexed="64"/></patternFill></fill>';
+      stylesXml=insertBeforeTag(fillsBump.xml, '</fills>', newFillXml);
+      var fillIndex=fillsBump.index;
+
+      var xfsBump=bumpXmlCount(stylesXml,'cellXfs');
+      if(xfsBump.index===-1) return null;
+      var newXfXml='<xf numFmtId="0" fontId="0" fillId="'+fillIndex+'" borderId="0" xfId="0" applyFill="1"/>';
+      stylesXml=insertBeforeTag(xfsBump.xml, '</cellXfs>', newXfXml);
+      var styleIndex=xfsBump.index;
+
+      sheetXml=highlightRowsInSheetXml(sheetXml, confirmedRowNumbers, styleIndex);
+
+      zip.file(stylesPath, stylesXml);
+      zip.file(sheetPath, sheetXml);
+      return zip.generateAsync({type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    });
+  }).catch(function(err){
+    console.error('xlsx style patch failed', err);
+    return null;
+  });
+}
+
+/* Finds `<TAGNAME count="N">` in an OOXML xml string, bumps N by 1, and
+   returns {xml:updatedXml, index:N} where N (the OLD count) is exactly the
+   0-based index the newly-appended element (inserted separately by the
+   caller, right before the matching close tag) will occupy. index is -1 if
+   the tag wasn't found (caller then aborts styling and falls back). */
+function bumpXmlCount(xml, tagName){
+  var re=new RegExp('(<'+tagName+'\\s+count=")(\\d+)(")');
+  var idx=-1;
+  var newXml=xml.replace(re, function(m,p1,p2,p3){ idx=parseInt(p2,10); return p1+(idx+1)+p3; });
+  return {xml:newXml, index:idx};
+}
+function insertBeforeTag(xml, tag, insertion){
+  var i=xml.indexOf(tag);
+  if(i===-1) return xml;
+  return xml.slice(0,i)+insertion+xml.slice(i);
+}
+/* Adds s="styleIndex" to every <c ...> cell belonging to the given 1-based
+   worksheet row numbers, by locating each <row r="N" ...>...</row> block as
+   plain text and rewriting its <c r="..."> tags — avoids needing a full XML
+   DOM parser/serializer (not reliably available across browsers/webviews)
+   just to toggle one attribute. */
+function highlightRowsInSheetXml(xml, rowNumbers, styleIndex){
+  rowNumbers.forEach(function(rn){
+    var openTag='<row r="'+rn+'"';
+    var startIdx=xml.indexOf(openTag);
+    if(startIdx===-1) return;
+    var endIdx=xml.indexOf('</row>', startIdx);
+    if(endIdx===-1) return;
+    endIdx += '</row>'.length;
+    var rowXml=xml.slice(startIdx, endIdx);
+    var newRowXml=rowXml.replace(/<c r="/g, '<c s="'+styleIndex+'" r="');
+    xml = xml.slice(0,startIdx)+newRowXml+xml.slice(endIdx);
+  });
+  return xml;
 }
 
 /* ===================== IMAGE PREVIEW ===================== */
@@ -1790,7 +2029,7 @@ function computeUmumiRows(){
     var sys = current ? current.sysQty : r.sys;
     var price = current ? current.salePrice : r.salePrice;
     var alisPrice = current ? current.alisPrice : r.alisPrice;
-    out.push({name:r.name, artikul:r.artikul, barcode:r.barcode, sys:sys, counted:r.counted, diff:(r.counted-sys), salePrice:price, alisPrice:(alisPrice||0), inBase:!!current});
+    out.push({name:r.name, artikul:r.artikul, barcode:r.barcode, sys:sys, counted:r.counted, diff:(r.counted-sys), salePrice:price, alisPrice:(alisPrice||0), inBase:!!current, key:k});
   });
   out.sort(function(a,b){ return (a.name||'').localeCompare(b.name||''); });
   return out;
@@ -1799,6 +2038,7 @@ function computeUmumiRows(){
 function renderUmumiView(){
   renderUmumiDocList();
   renderUmumiFileList();
+  $('umumiSortSelect').value=state.umumi.sort;
   renderUmumiTable();
 }
 function renderUmumiTable(){
@@ -1808,21 +2048,27 @@ function renderUmumiTable(){
     if(q && normLower(r.name).indexOf(q)===-1 && normLower(r.artikul).indexOf(q)===-1) return false;
     if(state.umumi.filter==='extra') return r.diff>0;
     if(state.umumi.filter==='missing') return r.diff<0;
+    if(state.umumi.filter==='extramissing') return r.diff!==0;
     return true;
   });
+  filtered=sortRowsList(filtered, state.umumi.sort);
   $('umTotal').textContent=rows.length;
   $('umCounted').textContent=rows.filter(function(r){return r.counted>0;}).length;
   $('umExtraCnt').textContent=rows.filter(function(r){return r.diff>0;}).length;
   $('umMissingCnt').textContent=rows.filter(function(r){return r.diff<0;}).length;
   var tbody=$('umumiBody'); tbody.innerHTML='';
   if(filtered.length===0){
-    tbody.innerHTML='<tr><td colspan="8" style="text-align:center; color:var(--text-faint); padding:18px;">Nəticə yoxdur</td></tr>';
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center; color:var(--text-faint); padding:18px;">Nəticə yoxdur</td></tr>';
     return;
   }
+  var confirmedMap=state.umumi.confirmedRows||{};
   filtered.forEach(function(r, idx){
     var diffClass = r.diff===0?'row-diff-zero':(r.diff>0?'row-diff-pos':'row-diff-neg');
+    var isConfirmed = !!confirmedMap[r.key];
     var tr=document.createElement('tr');
-    tr.innerHTML='<td class="num">'+(idx+1)+'</td><td>'+escapeHtml(r.name)+'</td><td style="font-family:var(--mono); font-size:10.5px;">'+escapeHtml(r.artikul||r.barcode||'')+'</td>'+
+    if(isConfirmed) tr.className='row-confirmed';
+    tr.innerHTML='<td class="confirm-td"><input type="checkbox" class="confirm-chk" data-key="'+escapeHtml(r.key||'')+'"'+(isConfirmed?' checked':'')+'></td>'+
+      '<td class="num">'+(idx+1)+'</td><td>'+escapeHtml(r.name)+'</td><td style="font-family:var(--mono); font-size:10.5px;">'+escapeHtml(r.artikul||r.barcode||'')+'</td>'+
       '<td class="num">'+r.sys+'</td><td class="num">'+r.counted+'</td>'+
       '<td class="num '+diffClass+'">'+(r.diff>0?'+':'')+r.diff+'</td>'+
       '<td class="num">'+(r.salePrice?r.salePrice.toFixed(2):'-')+'</td>'+
@@ -1842,10 +2088,24 @@ document.querySelectorAll('[data-view="umumi"] .filter-row .chip').forEach(funct
     renderUmumiTable();
   });
 });
+$('umumiSortSelect').addEventListener('change', function(){
+  state.umumi.sort=$('umumiSortSelect').value;
+  renderUmumiTable();
+});
+$('umumiBody').addEventListener('change', function(e){
+  var chk=e.target.closest('.confirm-chk');
+  if(!chk) return;
+  if(!state.umumi.confirmedRows) state.umumi.confirmedRows={};
+  var key=chk.getAttribute('data-key');
+  if(chk.checked) state.umumi.confirmedRows[key]=true; else delete state.umumi.confirmedRows[key];
+  var tr=chk.closest('tr');
+  if(tr) tr.classList.toggle('row-confirmed', chk.checked);
+  saveUmumiConfirmed();
+});
 $('umumiExportBtn').addEventListener('click', function(){
-  var rows=computeUmumiRows();
+  var rows=sortRowsList(computeUmumiRows(), state.umumi.sort);
   if(!rows.length){ showToast('Nəticə yoxdur','warn'); return; }
-  exportRowsToExcel(rows, 'umumi-neticesi-'+dateStamp()+'.xlsx', 'UmumiNetice');
+  exportRowsToExcel(rows, 'umumi-neticesi-'+dateStamp()+'.xlsx', 'UmumiNetice', state.umumi.confirmedRows||{});
 });
 
 /* Detailed per-row breakdown: one line per counted row across every SEÇİLMİŞ
@@ -1897,10 +2157,17 @@ $('umumiDetailExportBtn').addEventListener('click', function(){
 
 /* ===================== INIT ===================== */
 function init(){
-  Promise.all([idbGetAll('products'), idbGetAll('images'), loadAllDocs()]).then(function(res){
+  Promise.all([
+    idbGetAll('products'),
+    idbGetAll('images'),
+    loadAllDocs(),
+    idbGet('meta','umumiConfirmedRows').catch(function(){ return null; })
+  ]).then(function(res){
     state.products=res[0]||[];
     rebuildProductIndex();
     (res[1]||[]).forEach(function(img){ state.images[img.artikul]=true; });
+    var savedUmumiConfirmed=res[3];
+    if(savedUmumiConfirmed && savedUmumiConfirmed.value) state.umumi.confirmedRows=savedUmumiConfirmed.value;
     refreshHeaderStats();
     goView('baza');
   });
