@@ -40,7 +40,8 @@
 
   header{flex:0 0 auto; padding:12px 14px 10px; border-bottom:1px solid var(--border); background:linear-gradient(180deg,var(--panel),var(--bg)); display:flex; align-items:center; justify-content:space-between; gap:10px;}
   .brand{display:flex; align-items:center; gap:9px; min-width:0;}
-  .brand-mark{width:32px; height:32px; border-radius:7px; background:var(--accent); display:flex; align-items:center; justify-content:center; flex:0 0 auto; font-family:var(--mono); font-weight:700; color:#14161A; font-size:14px; box-shadow:0 0 0 3px var(--accent-dim);}
+  .brand-mark{width:32px; height:32px; border-radius:7px; background:var(--accent); display:flex; align-items:center; justify-content:center; flex:0 0 auto; font-family:var(--mono); font-weight:700; color:#14161A; font-size:14px; box-shadow:0 0 0 3px var(--accent-dim); border:none; padding:0;}
+  .brand-mark:active{filter:brightness(0.92);}
   .brand-text{min-width:0;}
   .brand-text h1{margin:0; font-size:14.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .brand-text p{margin:1px 0 0; font-size:10.5px; color:var(--text-dim); font-family:var(--mono); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
@@ -137,9 +138,15 @@
   .chip{flex:0 0 auto; font-size:11.5px; font-family:var(--mono); padding:7px 12px; border-radius:20px; border:1px solid var(--border); background:var(--panel-2); color:var(--text-dim); white-space:nowrap;}
   .chip.active{background:var(--accent); color:#191308; border-color:var(--accent); font-weight:700;}
   .summary-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px;}
+  .summary-grid.summary-grid-5{grid-template-columns:repeat(5,1fr); gap:6px;}
   .summary-grid .cell{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:9px 6px; text-align:center;}
   .summary-grid .cell .n{font-family:var(--mono); font-size:16px; font-weight:700;}
+  .summary-grid.summary-grid-5 .cell{padding:8px 3px;}
+  .summary-grid.summary-grid-5 .cell .n{font-size:14px;}
+  .summary-grid.summary-grid-5 .cell .l{font-size:8px;}
   .summary-grid .cell .l{font-size:9px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.4px; margin-top:2px;}
+  .summary-grid .cell .n.extra-color{color:var(--info);}
+  .summary-grid .cell .n.missing-color{color:var(--danger);}
   table.res-table{width:100%; border-collapse:collapse; font-size:11.5px;}
   table.res-table th{text-align:left; font-family:var(--mono); font-size:9.5px; text-transform:uppercase; letter-spacing:.4px; color:var(--text-dim); padding:6px 5px; border-bottom:1px solid var(--border);}
   table.res-table td{padding:8px 5px; border-bottom:1px solid var(--border); vertical-align:top;}
@@ -163,9 +170,27 @@
   .overlay{position:fixed; inset:0; background:rgba(0,0,0,.55); display:none; align-items:flex-end; justify-content:center; z-index:60;}
   .overlay.active{display:flex;}
   .overlay.center{align-items:center;}
-  .modal{background:var(--panel); border:1px solid var(--border); border-radius:16px 16px 0 0; padding:18px 16px calc(16px + env(safe-area-inset-bottom)); width:100%; max-width:680px; max-height:88vh; overflow-y:auto;}
+  .modal{position:relative; background:var(--panel); border:1px solid var(--border); border-radius:16px 16px 0 0; padding:18px 16px calc(16px + env(safe-area-inset-bottom)); width:100%; max-width:680px; max-height:88vh; overflow-y:auto;}
   .overlay.center .modal{border-radius:16px; max-width:420px;}
-  .modal h3{margin:0 0 4px; font-size:16px;}
+  .modal h3{margin:0 0 4px; font-size:16px; padding-right:26px;}
+  .modal-close-btn{position:absolute; top:12px; right:12px; width:30px; height:30px; border-radius:8px; border:1px solid var(--border); background:var(--panel-2); color:var(--text-dim); display:flex; align-items:center; justify-content:center; font-size:15px; line-height:1; flex:0 0 auto;}
+  .modal-close-btn:active{background:var(--panel-3);}
+
+  /* help / usage-guide modal */
+  #helpModal{max-height:86vh;}
+  .help-intro{font-size:12.5px; color:var(--text-dim); line-height:1.55; margin:0 0 16px;}
+  .help-section{margin-bottom:18px; padding-bottom:16px; border-bottom:1px solid var(--border);}
+  .help-section:last-child{border-bottom:none; margin-bottom:4px; padding-bottom:0;}
+  .help-section h4{margin:0 0 3px; font-size:14px; color:var(--accent); display:flex; align-items:center; gap:7px;}
+  .help-section h4 .hnum{display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:6px; background:var(--accent-dim); color:var(--accent); font-family:var(--mono); font-size:11px; flex:0 0 auto;}
+  .help-section .hdesc{font-size:12px; color:var(--text-dim); margin:0 0 8px;}
+  .help-section ol,.help-section ul{margin:0 0 8px; padding-left:19px; font-size:12.5px; line-height:1.6;}
+  .help-section li{margin-bottom:5px;}
+  .help-section li b{color:var(--text); font-weight:600;}
+  .help-tip{background:var(--panel-2); border:1px solid var(--border); border-radius:8px; padding:8px 10px; font-size:11.5px; color:var(--text-dim); line-height:1.55; margin-top:6px;}
+  .help-tip b{color:var(--text);}
+  .help-tip.warn{border-color:#4a2323; color:var(--danger);}
+  .help-tip.warn b{color:var(--danger);}
   .modal .sub{font-size:12.5px; color:var(--text-dim); margin:0 0 14px;}
 
   /* bottom sheet for manual search */
@@ -189,13 +214,17 @@
   .search-global-result .prod{font-size:13.5px; font-weight:700;}
   .search-global-result .price{font-size:12px; color:var(--accent); font-family:var(--mono); margin-top:2px;}
   .search-global-result .docrow{font-size:12px; color:var(--text-dim); font-family:var(--mono); padding:5px 0 0 8px;}
+
+  .clickable-name{font-weight:700; cursor:pointer; text-decoration:underline; text-decoration-style:dotted; text-underline-offset:2px;}
+  .upload-info{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-dim); font-family:var(--mono); background:var(--panel-2); border:1px solid var(--border); border-radius:8px; padding:8px 10px; margin-top:10px;}
+  .upload-info b{color:var(--text); font-family:var(--sans); font-weight:600;}
 </style>
 </head>
 <body>
 
 <header>
   <div class="brand">
-    <div class="brand-mark">AS</div>
+    <button class="brand-mark" id="helpBtn" title="Necə istifadə olunur?">AS</button>
     <div class="brand-text">
       <h1 id="hdrTitle">Anbar Sayımı</h1>
       <p id="hdrSub">Baza yüklənməyib</p>
@@ -217,6 +246,7 @@
       <p class="sub">Məhsul adı, artikulu, barkodu, sistem qalığı və satış qiyməti olan Excel faylını yükləyin.</p>
       <div class="dropzone" id="excelDropzone"><b>Excel faylı seçin</b><br>.xlsx / .xls / .csv</div>
       <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv">
+      <div class="upload-info" id="excelUploadInfo" style="display:none;"></div>
     </div>
 
     <div class="card" id="mappingCard" style="display:none;">
@@ -243,6 +273,7 @@
       <div class="dropzone" id="zipDropzone"><b>ZIP faylı seçin</b></div>
       <input type="file" id="zipFileInput" accept=".zip">
       <p class="sub" id="zipStatus" style="margin-top:10px;"></p>
+      <div class="upload-info" id="zipUploadInfo" style="display:none;"></div>
     </div>
 
     <div class="card">
@@ -340,11 +371,12 @@
             <option value="diff_desc">Fərq (Çoxdan-Aza)</option>
           </select>
         </div>
-        <div class="summary-grid">
-          <div class="cell"><div class="n" id="rsTotal">0</div><div class="l">Cəmi</div></div>
-          <div class="cell"><div class="n" id="rsCounted">0</div><div class="l">Sayılıb</div></div>
-          <div class="cell"><div class="n" id="rsExtraCnt">0</div><div class="l">Artıqlar</div></div>
-          <div class="cell"><div class="n" id="rsMissingCnt">0</div><div class="l">Əskiklər</div></div>
+        <div class="summary-grid summary-grid-5">
+          <div class="cell"><div class="n" id="rsCountedType">0</div><div class="l">Növ sayılıb</div></div>
+          <div class="cell"><div class="n extra-color" id="rsExtraType">0</div><div class="l">Növ artıq</div></div>
+          <div class="cell"><div class="n extra-color" id="rsExtraUnits">0</div><div class="l">Əd artıq</div></div>
+          <div class="cell"><div class="n missing-color" id="rsMissingType">0</div><div class="l">Növ əskik</div></div>
+          <div class="cell"><div class="n missing-color" id="rsMissingUnits">0</div><div class="l">Əd əskik</div></div>
         </div>
         <div style="overflow-x:auto;">
           <table class="res-table">
@@ -395,11 +427,12 @@
           <option value="diff_desc">Fərq (Çoxdan-Aza)</option>
         </select>
       </div>
-      <div class="summary-grid">
-        <div class="cell"><div class="n" id="umTotal">0</div><div class="l">Cəmi</div></div>
-        <div class="cell"><div class="n" id="umCounted">0</div><div class="l">Sayılıb</div></div>
-        <div class="cell"><div class="n" id="umExtraCnt">0</div><div class="l">Artıqlar</div></div>
-        <div class="cell"><div class="n" id="umMissingCnt">0</div><div class="l">Əskiklər</div></div>
+      <div class="summary-grid summary-grid-5">
+        <div class="cell"><div class="n" id="umCountedType">0</div><div class="l">Növ sayılıb</div></div>
+        <div class="cell"><div class="n extra-color" id="umExtraType">0</div><div class="l">Növ artıq</div></div>
+        <div class="cell"><div class="n extra-color" id="umExtraUnits">0</div><div class="l">Əd artıq</div></div>
+        <div class="cell"><div class="n missing-color" id="umMissingType">0</div><div class="l">Növ əskik</div></div>
+        <div class="cell"><div class="n missing-color" id="umMissingUnits">0</div><div class="l">Əd əskik</div></div>
       </div>
       <div style="overflow-x:auto;">
         <table class="res-table">
@@ -510,6 +543,7 @@
 <!-- Edit count row modal -->
 <div class="overlay center" id="editRowOverlay">
   <div class="modal">
+    <button class="modal-close-btn" id="editRowCloseBtn" title="Bağla">✕</button>
     <h3 id="editRowName">-</h3>
     <p class="sub" id="editRowCodes">-</p>
     <div class="qty-row">
@@ -533,6 +567,91 @@
   </div>
 </div>
 
+<!-- Help / usage guide modal -->
+<div class="overlay" id="helpOverlay">
+  <div class="modal" id="helpModal">
+    <button class="modal-close-btn" id="helpCloseBtn" title="Bağla">✕</button>
+    <h3>Necə istifadə etməli?</h3>
+    <p class="help-intro">Anbar Sayımı proqramı 5 əsas bölmədən ibarətdir: <b style="color:var(--text);">Baza, Sənədlər, Sayım, Nəticə və Ümumi Nəticə</b>. Aşağı naviqasiya çubuğundan bölmələr arasında keçid edə bilərsiniz. Bütün məlumatlar telefonunuzun/kompüterinizin yaddaşında (brauzerin daxili bazasında) saxlanılır — internet lazım deyil və proqramı bağlayıb yenidən açsanız məlumatlar itmir.</p>
+
+    <div class="help-section">
+      <h4><span class="hnum">1</span> Baza</h4>
+      <p class="hdesc">Sayıma başlamazdan əvvəl məhsul siyahısını (bazanı) və istəsəniz məhsul şəkillərini bura yükləyirsiniz. Bu, proqramın işə salınmasında İLK addımdır.</p>
+      <ol>
+        <li><b>Excel bazası:</b> "Excel faylı seçin" düyməsinə basıb .xlsx/.xls/.csv formatında məhsul siyahınızı seçin (Ad, Artikul, Barkod, Sistem qalığı, Satış/Alış qiyməti sütunları ola bilər).</li>
+        <li><b>Sütunları uyğunlaşdırın:</b> fayl seçiləndə aşağıda açılan formada hər sütunu (Ad, Artikul, Barkod və s.) Excel-inizdəki uyğun sütunla eşləşdirin — proqram adətən özü təxmin edir, siz yalnız yoxlayın. "Ad" sütunu MÜTLƏQ seçilməlidir. Sonda "Bazanı yüklə" düyməsinə basın.</li>
+        <li>Eyni adlı məhsulun bir neçə sətri (məs. fərqli barkodları) varsa, proqram onları avtomatik BİRLƏŞDİRİR və sistem qalıqlarını cəmləyir.</li>
+        <li><b>Məhsul şəkilləri:</b> istəyə bağlıdır. Şəkilləri bir ZIP arxivinə yığın, hər şəklin adı məhsulun artikulu ilə eyni olmalıdır (məs. <code>10990.jpg</code>). "ZIP faylı seçin" ilə yükləyin.</li>
+        <li>Excel və ZIP yükləndikdən sonra hansı faylın nə vaxt yükləndiyi dropzone-un altında görünür (fayl adı və tarix/saat).</li>
+        <li><b>Baza vəziyyəti</b> kartında neçə məhsul, şəkil, sənəd və açıq sənəd olduğunu görürsünüz. "Bazanı sıfırla" yalnız məhsul və şəkilləri silir, sayım sənədlərinizə TOXUNMUR.</li>
+      </ol>
+      <div class="help-tip">💡 Baza dəyişdikdə (yeni Excel yükləsəniz) köhnə məhsul siyahısı tamamilə əvəz olunur. Sayım sənədləri isə ayrıca saxlanıldığı üçün silinmir.</div>
+    </div>
+
+    <div class="help-section">
+      <h4><span class="hnum">2</span> Sənədlər</h4>
+      <p class="hdesc">Hər sayım (məs. bir anbarın, bir rəfin sayımı) ayrı bir "sənəd" kimi yaradılır.</p>
+      <ol>
+        <li><b>+ Yeni sayım sənədi:</b> başlıq (məs. "Anbar A rəfi 1-5"), tarix və saat daxil edib "Yarat" düyməsinə basın — sənəd avtomatik açılıb Sayım bölməsinə keçəcəksiniz.</li>
+        <li>Yuxarıdakı axtarış qutusundan sənədləri başlığa görə axtara bilərsiniz.</li>
+        <li>Hər sənəd kartında: <b>Aç</b> (sayıma davam etmək), <b>Bağla/Yenidən aç</b> (sənədin statusunu dəyişmək) və <b>Sil</b> (tam silmək — iki mərhələli təsdiq tələb olunur) düymələri var.</li>
+        <li><b>Ehtiyat nüsxə (backup):</b> "Nüsxə götür (JSON)" ilə bütün sənədləri bir fayla köçürə, "Bərpa et (JSON)" ilə isə əvvəllər götürülmüş nüsxəni geri yükləyə bilərsiniz. Bərpa zamanı mövcud sənədlər silinmir — fayldakılar yeni sənəd kimi əlavə olunur.</li>
+      </ol>
+      <div class="help-tip">💡 Telefon dəyişəndə və ya proqramı təmizləməzdən əvvəl mütləq "Nüsxə götür" edin — bu, bütün sayım məlumatlarınızın tək təhlükəsizlik nüsxəsidir.</div>
+    </div>
+
+    <div class="help-section">
+      <h4><span class="hnum">3</span> Sayım</h4>
+      <p class="hdesc">Açıq bir sənəd seçildikdən sonra faktiki sayım burada aparılır.</p>
+      <ol>
+        <li>Yuxarıdakı sahəyə barkodu, artikulu və ya məhsulun adını yazın — 2 hərfdən sonra uyğun məhsullar aşağıda siyahı (bottom sheet) kimi açılır. İstədiyiniz məhsula toxunun, sayğac +1 artırılıb siyahıya əlavə olunur.</li>
+        <li><b>📷 Kamera düyməsi</b> ilə barkod/QR skaneri açıb telefonun kamerası ilə birbaşa skan edə bilərsiniz.</li>
+        <li>Əl skaneri (Bluetooth/USB barkod pistoleti) istifadə edirsinizsə, sahəyə toxunmadan da işə düşür — proqram klaviatura sürətli daxiletməni avtomatik tanıyır.</li>
+        <li>Eyni məhsulu ardıcıl skan etsəniz, yeni sətir yaranmır — mövcud sətrin miqdarı artır. Fərqli məhsul aradan keçərsə, növbəti dəfə həmin məhsul üçün yeni sətir açılır (əvvəlki sətirlər "əvvəl: #N - M əd" kimi görünür).</li>
+        <li>Sayılan sətrin üzərinə toxunsanız redaktə pəncərəsi açılır: artikul və satış qiyməti (məs. <code>#3 · 10990 - 2.50 ₼</code>) göstərilir, +/− düymələri və ya birbaşa rəqəm daxil edərək miqdarı dəyişə, "Sətri sil" ilə sətri silə bilərsiniz. Pəncərəni sağ yuxarı küncdəki ✕ düyməsi ilə bağlaya bilərsiniz.</li>
+        <li>Bazada olmayan kod skan olunarsa "Məhsul tapılmadı" xəbərdarlığı çıxır — bağlayana qədər yeni skan qəbul olunmur (səhv əlavələrin qarşısını almaq üçün).</li>
+        <li>"Başlığı redaktə et" ilə sənədin adını/tarixini dəyişə, "Bağla/Yenidən aç" ilə statusunu dəyişə bilərsiniz.</li>
+        <li>"Excel-ə çıxar (bu sənəd)" düyməsi yalnız bu sənədin sayım nəticələrini .xlsx faylı kimi endirir.</li>
+      </ol>
+      <div class="help-tip">💡 Axtarış zamanı sözləri istənilən sırada və hətta Azərbaycan hərfləri (ı, ə, ş, ç, ö, ü, ğ) olmadan yazsanız belə tapır. Məs. "qırmızı qulplu qaşıq" adlı məhsulu tapmaq üçün "qasiq qirmiz" və ya "qulp qasiq" yazmaq kifayətdir.</div>
+    </div>
+
+    <div class="help-section">
+      <h4><span class="hnum">4</span> Nəticə</h4>
+      <p class="hdesc">Aktiv (açılmış) sənədin sayım nəticəsini — sistemdəki qalıqla müqayisədə — burada görürsünüz.</p>
+      <ol>
+        <li>Yuxarıdakı sahədən ad/artikul üzrə axtarış edə, çiplərdən (Hamısı / Artıqlar / Əskiklər / Artıqlar+Əskiklər) filtrləyə, "Sırala" siyahısından ada və ya fərqə görə sırlaya bilərsiniz.</li>
+        <li>Xülasə kartlarında: <b>Növ sayılıb</b> (neçə fərqli məhsul sayılıb), <b style="color:var(--info);">Növ artıq</b> və <b style="color:var(--info);">Əd artıq</b> (neçə məhsul növü artıq çıxıb və cəmi neçə ədəd artıqdır — göy rənglə), <b style="color:var(--danger);">Növ əskik</b> və <b style="color:var(--danger);">Əd əskik</b> (neçə məhsul növü çatışmır və cəmi neçə ədəd əskikdir — qırmızı rənglə).</li>
+        <li>Şəkli yüklənmiş məhsulların adı cədvəldə <b>qalın</b> yazılır — adın üzərinə toxunsanız şəkil açılır. Şəkli olmayan məhsulların adı adi mətn kimi qalır (kliklənmir).</li>
+        <li>Sətrin başındakı qutucuğu (✔) işarələyərək həmin sətri "yoxlanıldı/təsdiqləndi" kimi qeyd edə bilərsiniz — bu, Excel-ə çıxardıqda sarı fonla və "Təsdiq" sütunu ilə görünür.</li>
+        <li>"Excel-ə çıxar (nəticə)" bu sənədin tam nəticə cədvəlini .xlsx olaraq endirir.</li>
+      </ol>
+    </div>
+
+    <div class="help-section">
+      <h4><span class="hnum">5</span> Ümumi Nəticə</h4>
+      <p class="hdesc">Bir neçə sayım sənədini (məs. anbarın müxtəlif hissələrini) BİRLƏŞDİRİB ümumi nəticəni görmək üçündür.</p>
+      <ol>
+        <li><b>Sənədləri birləşdir:</b> siyahıdan hansı sənədlərin ümumi nəticəyə daxil olacağını seçin (qutucuqlar) — "Hamısını seç" / "Heç birini seçmə" sürətli düymələrdir.</li>
+        <li><b>Excel fayllarından əlavə et:</b> əvvəllər "Excel-ə çıxar" ilə endirdiyiniz nəticə fayllarını (məs. başqa telefonda sayılmış) əlavə seçib ümumi cəmə qoşa bilərsiniz — bir neçə fayl eyni anda seçilə bilər.</li>
+        <li>Aşağıdakı cədvəl və xülasə kartları Nəticə səhifəsi ilə eynidir (axtarış, filtr, sıralama, Növ/Əd artıq-əskik statistikası, qalın+kliklənən şəkilli məhsul adları, ✔ təsdiq qutucuqları).</li>
+        <li>İki fərqli export düyməsi var: <b>"Excel-ə çıxar (ümumi nəticə)"</b> — hər məhsul üzrə bir sətir olan cəmlənmiş cədvəl; <b>"Excel-ə çıxar (məhsul • sənəd • tarix • sıra • sayı)"</b> — HƏR sənəddəki HƏR sətri ayrıca sətir kimi göstərən ətraflı jurnal (kim, nə vaxt, hansı sənəddə neçə ədəd saymışdı).</li>
+      </ol>
+      <div class="help-tip warn">⚠️ "Sənədləri birləşdir" seçimi yalnız EKRANDA göstərilən ümumi nəticəyə təsir edir — sənədlərin özünü silmir və dəyişdirmir.</div>
+    </div>
+
+    <div class="help-section">
+      <h4><span class="hnum">⚙</span> Yuxarı paneldəki düymələr</h4>
+      <ul>
+        <li><b>🔍 Ümumi axtarış:</b> yazdığınız məhsulun BÜTÜN sayım sənədlərində hansı sətirdə, hansı tarixdə, neçə ədəd sayıldığını bir yerdə göstərir.</li>
+        <li><b>🔊/🔇 Səs rejimi:</b> düymə basma, uğurlu skan (yüksək "bip") və tapılmayan kod ("uğursuz" səs) səslərini aç/bağla edir.</li>
+        <li><b>🌙/☀️ Tema:</b> tünd/açıq rəng temasını dəyişir, seçim yadda saxlanılır.</li>
+        <li><b>AS loqosu</b> (bu düymə): bu bələdçini istənilən vaxt yenidən açmaq üçündür.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
 'use strict';
@@ -548,6 +667,32 @@ function escapeHtml(s){ return String(s===undefined||s===null?'':s).replace(/[&<
 function norm(v){ return (v===undefined||v===null)?'':String(v).trim(); }
 function normLower(v){ return norm(v).toLowerCase(); }
 function toNum(v){ var n=parseFloat(String(v===undefined||v===null?'':v).replace(',','.')); return isNaN(n)?0:n; }
+/* Folds Azerbaijani-specific letters down to their plain-Latin equivalents
+   (ı->i, ə->e, ç->c, ş->s, ö->o, ü->u, ğ->g) so search still matches when the
+   person types without diacritics (very common on non-Azerbaijani keyboards/
+   phones), e.g. typing "qirmizi qasiq" still finds "qırmızı ... qaşıq". Only
+   used for matching, never for display. */
+function azFold(v){
+  return String(v||'').replace(/[İIıƏəÇçŞşÖöÜüĞğ]/g, function(ch){
+    var map={'İ':'i','I':'i','ı':'i','Ə':'e','ə':'e','Ç':'c','ç':'c','Ş':'s','ş':'s','Ö':'o','ö':'o','Ü':'u','ü':'u','Ğ':'g','ğ':'g'};
+    return map[ch]||ch;
+  });
+}
+/* Multi-word "any order" search matcher: splits the query into words and
+   requires EVERY word to appear somewhere in the haystack (as a substring),
+   regardless of the order the words were typed in or where in the haystack
+   they occur, and tolerant of missing Azerbaijani diacritics on either side.
+   E.g. haystack "qırmızı qulplu qaşıq", query "qaşıq qırmız" or "qasiq
+   qirmiz" -> matches, because both words are found somewhere in the
+   haystack, even typed in reverse order, as a partial word, and/or without
+   diacritics. Used by every search box in the app (scan search, sənəd
+   search, nəticə/ümumi nəticə search, ümumi axtarış). */
+function multiWordMatch(haystack, query){
+  var words = azFold(normLower(query)).split(/\s+/).filter(Boolean);
+  if(!words.length) return true;
+  var h = azFold(normLower(haystack));
+  return words.every(function(w){ return h.indexOf(w)!==-1; });
+}
 function debounce(fn,ms){ var t=null; return function(){ var args=arguments, ctx=this; clearTimeout(t); t=setTimeout(function(){ fn.apply(ctx,args); }, ms); }; }
 function dateStamp(){ var d=new Date(); return d.getFullYear()+''+pad(d.getMonth()+1)+pad(d.getDate())+'-'+pad(d.getHours())+pad(d.getMinutes()); }
 
@@ -667,12 +812,12 @@ function getCurrentSysQty(row){
   return p ? (p.sysQty||0) : (row.sys||0);
 }
 function searchProducts(q){
-  q=normLower(q);
-  if(!q) return [];
+  if(!norm(q)) return [];
   return state.products.filter(function(p){
     var artikulsStr = (p.artikuls&&p.artikuls.length)?p.artikuls.join(' '):(p.artikul||'');
     var barcodesStr = (p.barcodes&&p.barcodes.length)?p.barcodes.join(' '):(p.barcode||'');
-    return normLower(p.name).indexOf(q)!==-1 || normLower(artikulsStr).indexOf(q)!==-1 || normLower(barcodesStr).indexOf(q)!==-1;
+    var hay = (p.name||'')+' '+artikulsStr+' '+barcodesStr;
+    return multiWordMatch(hay, q);
   }).slice(0,40);
 }
 
@@ -712,6 +857,18 @@ $('themeToggleBtn').addEventListener('click', function(){
   try{ saved = localStorage.getItem('anbarSayimiTheme') || 'dark'; }catch(e){}
   applyTheme(saved);
 })();
+
+/* ===================== HELP / USAGE GUIDE ===================== */
+/* Opens/closes the "necə istifadə olunur" bottom-sheet guide, triggered by
+   tapping the yellow "AS" logo mark in the top-left of the header. */
+$('helpBtn').addEventListener('click', function(){
+  $('helpOverlay').classList.add('active');
+  $('helpModal').scrollTop=0;
+});
+$('helpCloseBtn').addEventListener('click', function(){ $('helpOverlay').classList.remove('active'); });
+$('helpOverlay').addEventListener('click', function(e){
+  if(e.target===$('helpOverlay')) $('helpOverlay').classList.remove('active');
+});
 
 /* ===================== SƏSLİ REJİM ===================== */
 /* Short beep/tick feedback sounds, generated on the fly with the Web Audio
@@ -777,14 +934,13 @@ document.addEventListener('click', function(e){
    a given product, in which document(s) it was counted, at which row number
    (seq), and in what quantity. */
 function globalSearchCounts(q){
-  q=normLower(q);
-  if(!q) return [];
+  if(!norm(q)) return [];
   var resultsMap={};
   var order=[];
   state.docs.forEach(function(d){
     (d.items||[]).forEach(function(row){
-      var hay = normLower(row.name)+' '+normLower(row.artikul||'')+' '+normLower(row.barcode||'');
-      if(hay.indexOf(q)===-1) return;
+      var hay = (row.name||'')+' '+(row.artikul||'')+' '+(row.barcode||'');
+      if(!multiWordMatch(hay, q)) return;
       var gKey = row.key || row.artikul || row.barcode || ('NM_'+normLower(row.name));
       if(!resultsMap[gKey]){
         resultsMap[gKey]={name:row.name, artikul:row.artikul, barcode:row.barcode, entries:[]};
@@ -840,7 +996,7 @@ $('globalSearchInput').addEventListener('input', debounce(function(){
 }, 150));
 
 /* ===================== BAZA: EXCEL ===================== */
-var pendingWorkbookRows=null, pendingHeaders=null;
+var pendingWorkbookRows=null, pendingHeaders=null, pendingExcelFileName=null;
 
 $('excelDropzone').addEventListener('click', function(){ $('excelFileInput').click(); });
 $('excelFileInput').addEventListener('change', function(e){
@@ -861,12 +1017,37 @@ function readWorkbook(file){
       if(rows.length<2){ showToast('Excel boşdur və ya sətir yoxdur','warn'); return; }
       pendingHeaders=rows[0];
       pendingWorkbookRows=rows.slice(1);
+      pendingExcelFileName=file.name;
       showMappingUI(pendingHeaders);
     }catch(err){
       showToast('Fayl oxunmadı','warn');
     }
   };
   reader.readAsArrayBuffer(file);
+}
+
+/* Formats an upload-info line ("Yüklənib: filename · 06.08.2026 14:23") and
+   both displays it in the given DOM element and persists it (name+time) to
+   the 'meta' IndexedDB store under the given key, so it survives closing and
+   reopening the app — mirroring how other app-wide settings are persisted. */
+function fmtUploadInfo(fileName, ts){
+  var d=new Date(ts);
+  var dateStr=pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear();
+  var timeStr=pad(d.getHours())+':'+pad(d.getMinutes());
+  return 'Yüklənib: <b>'+escapeHtml(fileName)+'</b> · '+dateStr+' '+timeStr;
+}
+function setUploadInfo(elId, fileName, ts){
+  var el=$(elId);
+  el.innerHTML=fmtUploadInfo(fileName, ts);
+  el.style.display='flex';
+}
+function saveUploadInfo(metaKey, fileName, ts){
+  return idbPut('meta', {key:metaKey, value:{fileName:fileName, ts:ts}}).catch(function(){});
+}
+function loadUploadInfo(metaKey, elId){
+  return idbGet('meta', metaKey).then(function(rec){
+    if(rec && rec.value && rec.value.fileName){ setUploadInfo(elId, rec.value.fileName, rec.value.ts); }
+  }).catch(function(){});
 }
 
 function idxByKeys(headers, keys){
@@ -954,6 +1135,9 @@ $('confirmMapBtn').addEventListener('click', function(){
     var msg = products.length+' məhsul yükləndi';
     if(mergedCount>0) msg += ' (' + mergedCount + ' təkrar barkod birləşdirildi)';
     showToast(msg,'ok');
+    var uploadTs=Date.now();
+    setUploadInfo('excelUploadInfo', pendingExcelFileName||'(naməlum fayl)', uploadTs);
+    saveUploadInfo('excelUploadInfo', pendingExcelFileName||'(naməlum fayl)', uploadTs);
   });
 });
 
@@ -998,6 +1182,9 @@ $('zipFileInput').addEventListener('change', function(e){
       refreshHeaderStats();
       $('zipStatus').textContent = matched+' şəkil uyğunlaşdırıldı, '+unmatched+' uyğunlaşmadı.';
       showToast(matched+' şəkil yükləndi','ok');
+      var zipTs=Date.now();
+      setUploadInfo('zipUploadInfo', f.name, zipTs);
+      saveUploadInfo('zipUploadInfo', f.name, zipTs);
     });
   }).catch(function(){
     $('zipStatus').textContent='ZIP oxunmadı.';
@@ -1007,9 +1194,11 @@ $('zipFileInput').addEventListener('change', function(e){
 
 $('resetBaseBtn').addEventListener('click', function(){
   if(!confirm('Bütün məhsullar və şəkillər silinəcək. Sənədlər qalacaq. Davam edilsin?')) return;
-  Promise.all([idbClear('products'), idbClear('images')]).then(function(){
+  Promise.all([idbClear('products'), idbClear('images'), idbDelete('meta','excelUploadInfo').catch(function(){}), idbDelete('meta','zipUploadInfo').catch(function(){})]).then(function(){
     state.products=[]; state.images={}; rebuildProductIndex(); refreshHeaderStats();
     $('zipStatus').textContent='';
+    $('excelUploadInfo').style.display='none'; $('excelUploadInfo').innerHTML='';
+    $('zipUploadInfo').style.display='none'; $('zipUploadInfo').innerHTML='';
     showToast('Baza sıfırlandı','warn');
   });
 });
@@ -1035,10 +1224,10 @@ function loadAllDocs(){
 }
 
 function renderDocList(){
-  var q=normLower($('docSearchInput').value);
+  var q=norm($('docSearchInput').value);
   var list=state.docs.filter(function(d){
     if(!q) return true;
-    return normLower(d.part).indexOf(q)!==-1 || normLower(d.title||'').indexOf(q)!==-1;
+    return multiWordMatch((d.part||'')+' '+(d.title||''), q);
   });
   var wrap=$('docList'); wrap.innerHTML='';
   if(list.length===0){
@@ -1557,7 +1746,8 @@ function openEditRow(rowId){
   if(!row) return;
   state.editingRowId=rowId; state.editingRowQty=row.qty;
   $('editRowName').textContent=row.name;
-  $('editRowCodes').textContent='#'+row.seq+' · '+(row.artikul||row.barcode||'');
+  var priceText = (row.salePrice?row.salePrice.toFixed(2):'0.00')+' ₼';
+  $('editRowCodes').textContent='#'+row.seq+' · '+(row.artikul||row.barcode||'')+' - '+priceText;
   $('editRowQtyInput').value=row.qty;
   $('editRowOverlay').classList.add('active');
   requestAnimationFrame(function(){ $('editRowQtyInput').focus(); $('editRowQtyInput').select(); });
@@ -1581,6 +1771,7 @@ $('editRowPlus').addEventListener('click', function(){
 $('editRowQtyInput').addEventListener('input', function(){
   syncEditRowQtyFromInput();
 });
+$('editRowCloseBtn').addEventListener('click', function(){ $('editRowOverlay').classList.remove('active'); });
 $('editRowDeleteBtn').addEventListener('click', function(){
   var doc=state.activeDoc;
   doc.items=doc.items.filter(function(r){return r.id!==state.editingRowId;});
@@ -1649,6 +1840,18 @@ function sortRowsList(rows, sortValue){
   return out;
 }
 
+/* Resolves the canonical artikul (image key) for a computed result row and
+   builds the <td>Ad</td> cell content: bold + underlined + clickable ONLY
+   when that product actually has an uploaded image; otherwise a plain
+   (non-bold, non-clickable) name, per spec. */
+function buildRowNameHtml(r){
+  var product = (r.artikul && state.byArtikul[r.artikul]) || (r.barcode && state.byBarcode[r.barcode]) || null;
+  var imgArtikul = product ? product.artikul : (r.artikul||'');
+  var hasImg = !!(imgArtikul && state.images[imgArtikul]);
+  if(!hasImg) return escapeHtml(r.name);
+  return '<span class="clickable-name" data-img-artikul="'+escapeHtml(imgArtikul)+'" data-img-name="'+escapeHtml(r.name)+'">'+escapeHtml(r.name)+'</span>';
+}
+
 function renderResultsView(){
   if(!state.activeDoc){
     $('noResultsDocCard').style.display='block';
@@ -1669,17 +1872,20 @@ function renderResultsTable(){
   var rows=computeAggregatedRows(doc);
   var q=state.resultsSearch;
   var filtered=rows.filter(function(r){
-    if(q && normLower(r.name).indexOf(q)===-1 && normLower(r.artikul).indexOf(q)===-1) return false;
+    if(q && !multiWordMatch((r.name||'')+' '+(r.artikul||'')+' '+(r.barcode||''), q)) return false;
     if(state.resultsFilter==='extra') return r.diff>0;
     if(state.resultsFilter==='missing') return r.diff<0;
     if(state.resultsFilter==='extramissing') return r.diff!==0;
     return true;
   });
   filtered=sortRowsList(filtered, state.resultsSort);
-  $('rsTotal').textContent=rows.length;
-  $('rsCounted').textContent=rows.filter(function(r){return r.counted>0;}).length;
-  $('rsExtraCnt').textContent=rows.filter(function(r){return r.diff>0;}).length;
-  $('rsMissingCnt').textContent=rows.filter(function(r){return r.diff<0;}).length;
+  var extraRowsAll=rows.filter(function(r){return r.diff>0;});
+  var missingRowsAll=rows.filter(function(r){return r.diff<0;});
+  $('rsCountedType').textContent=rows.filter(function(r){return r.counted>0;}).length;
+  $('rsExtraType').textContent=extraRowsAll.length;
+  $('rsExtraUnits').textContent=extraRowsAll.reduce(function(s,r){return s+r.diff;},0);
+  $('rsMissingType').textContent=missingRowsAll.length;
+  $('rsMissingUnits').textContent=missingRowsAll.reduce(function(s,r){return s+Math.abs(r.diff);},0);
   var tbody=$('resultsBody'); tbody.innerHTML='';
   if(filtered.length===0){
     tbody.innerHTML='<tr><td colspan="9" style="text-align:center; color:var(--text-faint); padding:18px;">Nəticə yoxdur</td></tr>';
@@ -1691,8 +1897,9 @@ function renderResultsTable(){
     var isConfirmed = !!confirmedMap[r.key];
     var tr=document.createElement('tr');
     if(isConfirmed) tr.className='row-confirmed';
+    var nameHtml=buildRowNameHtml(r);
     tr.innerHTML='<td class="confirm-td"><input type="checkbox" class="confirm-chk" data-key="'+escapeHtml(r.key||'')+'"'+(isConfirmed?' checked':'')+'></td>'+
-      '<td class="num">'+(idx+1)+'</td><td>'+escapeHtml(r.name)+'</td><td style="font-family:var(--mono); font-size:10.5px;">'+escapeHtml(r.artikul||r.barcode||'')+'</td>'+
+      '<td class="num">'+(idx+1)+'</td><td>'+nameHtml+'</td><td style="font-family:var(--mono); font-size:10.5px;">'+escapeHtml(r.artikul||r.barcode||'')+'</td>'+
       '<td class="num">'+r.sys+'</td><td class="num">'+r.counted+'</td>'+
       '<td class="num '+diffClass+'">'+(r.diff>0?'+':'')+r.diff+'</td>'+
       '<td class="num">'+(r.salePrice?r.salePrice.toFixed(2):'-')+'</td>'+
@@ -1725,6 +1932,11 @@ $('resultsBody').addEventListener('change', function(e){
   var tr=chk.closest('tr');
   if(tr) tr.classList.toggle('row-confirmed', chk.checked);
   persistActiveDoc();
+});
+$('resultsBody').addEventListener('click', function(e){
+  var el=e.target.closest('.clickable-name');
+  if(!el) return;
+  openImagePreview(el.getAttribute('data-img-artikul'), el.getAttribute('data-img-name'));
 });
 $('exportResultsBtn').addEventListener('click', function(){
   if(!state.activeDoc) return;
@@ -2045,17 +2257,20 @@ function renderUmumiTable(){
   var rows=computeUmumiRows();
   var q=state.umumi.search;
   var filtered=rows.filter(function(r){
-    if(q && normLower(r.name).indexOf(q)===-1 && normLower(r.artikul).indexOf(q)===-1) return false;
+    if(q && !multiWordMatch((r.name||'')+' '+(r.artikul||'')+' '+(r.barcode||''), q)) return false;
     if(state.umumi.filter==='extra') return r.diff>0;
     if(state.umumi.filter==='missing') return r.diff<0;
     if(state.umumi.filter==='extramissing') return r.diff!==0;
     return true;
   });
   filtered=sortRowsList(filtered, state.umumi.sort);
-  $('umTotal').textContent=rows.length;
-  $('umCounted').textContent=rows.filter(function(r){return r.counted>0;}).length;
-  $('umExtraCnt').textContent=rows.filter(function(r){return r.diff>0;}).length;
-  $('umMissingCnt').textContent=rows.filter(function(r){return r.diff<0;}).length;
+  var umExtraRowsAll=rows.filter(function(r){return r.diff>0;});
+  var umMissingRowsAll=rows.filter(function(r){return r.diff<0;});
+  $('umCountedType').textContent=rows.filter(function(r){return r.counted>0;}).length;
+  $('umExtraType').textContent=umExtraRowsAll.length;
+  $('umExtraUnits').textContent=umExtraRowsAll.reduce(function(s,r){return s+r.diff;},0);
+  $('umMissingType').textContent=umMissingRowsAll.length;
+  $('umMissingUnits').textContent=umMissingRowsAll.reduce(function(s,r){return s+Math.abs(r.diff);},0);
   var tbody=$('umumiBody'); tbody.innerHTML='';
   if(filtered.length===0){
     tbody.innerHTML='<tr><td colspan="9" style="text-align:center; color:var(--text-faint); padding:18px;">Nəticə yoxdur</td></tr>';
@@ -2067,8 +2282,9 @@ function renderUmumiTable(){
     var isConfirmed = !!confirmedMap[r.key];
     var tr=document.createElement('tr');
     if(isConfirmed) tr.className='row-confirmed';
+    var nameHtml=buildRowNameHtml(r);
     tr.innerHTML='<td class="confirm-td"><input type="checkbox" class="confirm-chk" data-key="'+escapeHtml(r.key||'')+'"'+(isConfirmed?' checked':'')+'></td>'+
-      '<td class="num">'+(idx+1)+'</td><td>'+escapeHtml(r.name)+'</td><td style="font-family:var(--mono); font-size:10.5px;">'+escapeHtml(r.artikul||r.barcode||'')+'</td>'+
+      '<td class="num">'+(idx+1)+'</td><td>'+nameHtml+'</td><td style="font-family:var(--mono); font-size:10.5px;">'+escapeHtml(r.artikul||r.barcode||'')+'</td>'+
       '<td class="num">'+r.sys+'</td><td class="num">'+r.counted+'</td>'+
       '<td class="num '+diffClass+'">'+(r.diff>0?'+':'')+r.diff+'</td>'+
       '<td class="num">'+(r.salePrice?r.salePrice.toFixed(2):'-')+'</td>'+
@@ -2101,6 +2317,11 @@ $('umumiBody').addEventListener('change', function(e){
   var tr=chk.closest('tr');
   if(tr) tr.classList.toggle('row-confirmed', chk.checked);
   saveUmumiConfirmed();
+});
+$('umumiBody').addEventListener('click', function(e){
+  var el=e.target.closest('.clickable-name');
+  if(!el) return;
+  openImagePreview(el.getAttribute('data-img-artikul'), el.getAttribute('data-img-name'));
 });
 $('umumiExportBtn').addEventListener('click', function(){
   var rows=sortRowsList(computeUmumiRows(), state.umumi.sort);
@@ -2161,7 +2382,9 @@ function init(){
     idbGetAll('products'),
     idbGetAll('images'),
     loadAllDocs(),
-    idbGet('meta','umumiConfirmedRows').catch(function(){ return null; })
+    idbGet('meta','umumiConfirmedRows').catch(function(){ return null; }),
+    loadUploadInfo('excelUploadInfo','excelUploadInfo'),
+    loadUploadInfo('zipUploadInfo','zipUploadInfo')
   ]).then(function(res){
     state.products=res[0]||[];
     rebuildProductIndex();
