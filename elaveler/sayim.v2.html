@@ -70,6 +70,13 @@
   input[type=file]{display:none;}
   .dropzone{border:1.5px dashed var(--border); border-radius:10px; padding:22px 14px; text-align:center; color:var(--text-dim); font-size:12.5px; cursor:pointer; background:var(--panel-2);}
   .dropzone b{color:var(--text);}
+  .dropzone.dragover{border-color:var(--accent); background:var(--accent-dim); color:var(--text);}
+  /* Compact single-row variant used on the Ümumi Nəticə page's "Excel fayllarından
+     əlavə et" area, so the file-adding controls don't eat up mobile screen space. */
+  .dropzone-compact{display:flex; align-items:center; gap:8px; padding:9px 11px; text-align:left; font-size:11.5px;}
+  .dropzone-compact .dz-icon{width:17px; height:17px; flex:0 0 auto; stroke:var(--text-dim);}
+  .dropzone-compact.dragover .dz-icon{stroke:var(--accent);}
+  .subsection-label{display:block; font-size:11px; color:var(--text-dim); margin:0 0 4px; font-family:var(--mono); text-transform:uppercase; letter-spacing:.5px;}
 
   select,.field-input{width:100%; background:var(--panel-2); border:1px solid var(--border); color:var(--text); border-radius:8px; padding:10px 11px; font-size:13.5px; font-family:var(--sans);}
   label.field-label{display:block; font-size:11px; color:var(--text-dim); margin:0 0 5px; font-family:var(--mono); text-transform:uppercase; letter-spacing:.5px;}
@@ -403,10 +410,25 @@
 
     <div class="card">
       <h2>Excel fayllarından əlavə et</h2>
-      <p class="sub">Əvvəllər "Excel-ə çıxar" ilə endirilmiş sayım nəticə fayllarını seçin, nəticələr yuxarıdakı sənədlərlə birlikdə cəmlənəcək.</p>
-      <div class="dropzone" id="umumiExcelDropzone"><b>Excel fayl(lar)ı seçin</b><br>bir və ya bir neçə fayl</div>
+      <p class="sub">Əvvəllər "Excel-ə çıxar" ilə endirilmiş faylları seçin və ya sürükləyib buraxın — sənədlərlə birlikdə cəmlənəcək.</p>
+      <div class="dropzone dropzone-compact" id="umumiExcelDropzone">
+        <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span><b>Fayl seçin</b> və ya sürükləyib buraxın</span>
+      </div>
       <input type="file" id="umumiExcelInput" accept=".xlsx,.xls,.csv" multiple>
-      <div id="umumiFileList" style="margin-top:10px;"></div>
+      <div id="umumiFileList" style="margin-top:8px;"></div>
+
+      <div style="height:1px; background:var(--border); margin:12px 0;"></div>
+
+      <label class="subsection-label">Faylları birləşdir (cəmləmədən, tək fayl)</label>
+      <p class="sub" style="margin-top:0;">Seçilən fayllar cəmlənmədən, olduğu kimi ardıcıl birləşdirilib tək fayl olaraq yüklənəcək (hər sətrə mənbə fayl adı əlavə olunur).</p>
+      <div class="dropzone dropzone-compact" id="umumiMergeExcelDropzone">
+        <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span><b>Fayl seçin</b> və ya sürükləyib buraxın</span>
+      </div>
+      <input type="file" id="umumiMergeExcelInput" accept=".xlsx,.xls,.csv" multiple>
+      <div id="umumiMergeFileList" style="margin-top:8px;"></div>
+      <button class="btn btn-accent btn-sm" id="umumiMergeExportBtn" style="margin-top:8px; width:100%;" disabled>Faylları birləşdir və Excel-ə çıxar</button>
     </div>
 
     <div class="card">
@@ -548,7 +570,7 @@
     <p class="sub" id="editRowCodes">-</p>
     <div class="qty-row">
       <button class="qty-btn" id="editRowMinus">−</button>
-      <input class="qty-edit-input" id="editRowQtyInput" type="number" inputmode="numeric" min="0" step="1" value="1">
+      <input class="qty-edit-input" id="editRowQtyInput" type="number" inputmode="decimal" min="0" step="0.01" value="1">
       <button class="qty-btn" id="editRowPlus">+</button>
     </div>
     <div class="btn-row">
@@ -634,6 +656,7 @@
       <ol>
         <li><b>Sənədləri birləşdir:</b> siyahıdan hansı sənədlərin ümumi nəticəyə daxil olacağını seçin (qutucuqlar) — "Hamısını seç" / "Heç birini seçmə" sürətli düymələrdir.</li>
         <li><b>Excel fayllarından əlavə et:</b> əvvəllər "Excel-ə çıxar" ilə endirdiyiniz nəticə fayllarını (məs. başqa telefonda sayılmış) əlavə seçib ümumi cəmə qoşa bilərsiniz — bir neçə fayl eyni anda seçilə bilər.</li>
+        <li><b>Faylları birləşdir (cəmləmədən, tək fayl):</b> bir neçə əvvəlcədən çıxarılmış Excel sənədini seçin — bu, onları CƏMLƏMİR, sadəcə içindəkiləri olduğu kimi ardı-ardına tək faylda birləşdirir (eyni məhsul bir neçə sənəddə varsa ayrı-ayrı sətir kimi qalır) və hər sətrə həmin sətrin hansı fayldan gəldiyini göstərən son bir sütun əlavə edir.</li>
         <li>Aşağıdakı cədvəl və xülasə kartları Nəticə səhifəsi ilə eynidir (axtarış, filtr, sıralama, Növ/Əd artıq-əskik statistikası, qalın+kliklənən şəkilli məhsul adları, ✔ təsdiq qutucuqları).</li>
         <li>İki fərqli export düyməsi var: <b>"Excel-ə çıxar (ümumi nəticə)"</b> — hər məhsul üzrə bir sətir olan cəmlənmiş cədvəl; <b>"Excel-ə çıxar (məhsul • sənəd • tarix • sıra • sayı)"</b> — HƏR sənəddəki HƏR sətri ayrıca sətir kimi göstərən ətraflı jurnal (kim, nə vaxt, hansı sənəddə neçə ədəd saymışdı).</li>
       </ol>
@@ -667,6 +690,19 @@ function escapeHtml(s){ return String(s===undefined||s===null?'':s).replace(/[&<
 function norm(v){ return (v===undefined||v===null)?'':String(v).trim(); }
 function normLower(v){ return norm(v).toLowerCase(); }
 function toNum(v){ var n=parseFloat(String(v===undefined||v===null?'':v).replace(',','.')); return isNaN(n)?0:n; }
+/* Rounds a (possibly fractional) quantity to 2 decimal places, avoiding the
+   classic floating point drift (e.g. 0.1+0.2) that would otherwise creep in
+   every time counted quantities are summed/edited. Used everywhere a qty is
+   stored or accumulated. */
+function roundQty(v){ return Math.round(toNum(v)*100)/100; }
+/* Formats a quantity for on-screen / on-document display, always with
+   exactly 2 digits after the decimal point (e.g. 1 -> "1.00", 3.35 -> "3.35",
+   1.8 -> "1.80"), per the fractional-quantity support (kg, m, l və s. kimi
+   kəsr say vahidləri). */
+function fmtQty(v){ return roundQty(v).toFixed(2); }
+/* Same as fmtQty but keeps a leading "+" for positive numbers, used for the
+   "Fərq" (diff) columns where the sign matters. */
+function fmtQtySigned(v){ var n=roundQty(v); return (n>0?'+':'')+n.toFixed(2); }
 /* Folds Azerbaijani-specific letters down to their plain-Latin equivalents
    (ı->i, ə->e, ç->c, ş->s, ö->o, ü->u, ğ->g) so search still matches when the
    person types without diacritics (very common on non-Azerbaijani keyboards/
@@ -695,6 +731,26 @@ function multiWordMatch(haystack, query){
 }
 function debounce(fn,ms){ var t=null; return function(){ var args=arguments, ctx=this; clearTimeout(t); t=setTimeout(function(){ fn.apply(ctx,args); }, ms); }; }
 function dateStamp(){ var d=new Date(); return d.getFullYear()+''+pad(d.getMonth()+1)+pad(d.getDate())+'-'+pad(d.getHours())+pad(d.getMinutes()); }
+/* Turns an arbitrary sənəd title ("Xırdavat", "Anbar A rəfi 1-5", etc.) into
+   a safe, filename-friendly slug: folds Azerbaijani letters down to plain
+   latin (reusing azFold), lowercases, and collapses anything that isn't a
+   letter/digit into a single hyphen, trimming stray hyphens at the ends.
+   Returns '' if there's nothing usable, so callers can fall back cleanly. */
+function slugifyForFilename(str){
+  var s=azFold(norm(str)).toLowerCase();
+  s=s.replace(/[^a-z0-9]+/g,'-');
+  s=s.replace(/^-+|-+$/g,'');
+  return s;
+}
+/* Builds an export filename that leads with the sayım sənədinin adı (the
+   document's title/part), e.g. doc.part="Xırdavat" + baseName="sayim" ->
+   "xirdavat-sayim-20260808-0204.xlsx" instead of the plain
+   "sayim-20260808-0204.xlsx". Falls back to the plain pattern (no prefix)
+   when the document has no usable title. */
+function buildDocExportFilename(doc, baseName){
+  var slug=slugifyForFilename(doc && (doc.part||doc.title));
+  return (slug?slug+'-':'')+baseName+'-'+dateStamp()+'.xlsx';
+}
 
 var toastTimer=null;
 function showToast(msg, kind){
@@ -777,7 +833,7 @@ var state={
   resultsFilter:'all', resultsSearch:'', resultsSort:'name_asc',
   html5Qrcode:null, cameraOn:false, lastCamCode:null, lastCamTs:0,
   theme:'dark', soundEnabled:true,
-  umumi:{ selectedDocIds:{}, importedFiles:[], filter:'all', search:'', sort:'name_asc', confirmedRows:{} }
+  umumi:{ selectedDocIds:{}, importedFiles:[], mergeFiles:[], filter:'all', search:'', sort:'name_asc', confirmedRows:{} }
 };
 
 /* Persists state.umumi.confirmedRows (the təsdiq/✔ checkboxes on the "Ümumi
@@ -976,7 +1032,7 @@ function renderGlobalSearchResults(q){
     div.className='search-global-result';
     var codeBit = p.artikul||p.barcode;
     var rowsHtml=p.entries.map(function(en){
-      return '<div class="docrow">'+escapeHtml(en.docTitle)+' · '+fmtDateAz(en.docDate)+(en.docTime?(' '+en.docTime):'')+' · #'+en.seq+' · '+en.qty+' əd</div>';
+      return '<div class="docrow">'+escapeHtml(en.docTitle)+' · '+fmtDateAz(en.docDate)+(en.docTime?(' '+en.docTime):'')+' · #'+en.seq+' · '+fmtQty(en.qty)+' əd</div>';
     }).join('');
     div.innerHTML='<div class="prod">'+escapeHtml(p.name)+(codeBit?(' <span style="color:var(--text-dim); font-weight:400; font-family:var(--mono); font-size:11px;">('+escapeHtml(codeBit)+')</span>'):'')+'</div>'+rowsHtml;
     wrap.appendChild(div);
@@ -1455,14 +1511,14 @@ function persistActiveDoc(){
 
 function addCountRow(doc, product, qty){
   var key = product.artikul || ('BC_'+product.barcode);
-  qty = qty||1;
+  qty = roundQty(qty||1);
   var lastRow = doc.items.length ? doc.items[doc.items.length-1] : null;
   /* If the very last row added is the same product, just accumulate the
      quantity into that row instead of creating a new one. If a different
      product was scanned in between, a fresh row is created below, and future
      consecutive scans of this product will accumulate into THAT new row. */
   if(lastRow && lastRow.key===key){
-    lastRow.qty += qty;
+    lastRow.qty = roundQty(lastRow.qty + qty);
     lastRow.ts = Date.now();
     return lastRow;
   }
@@ -1500,7 +1556,7 @@ function buildPrevTagsForRow(doc, idx){
   var prevRows=doc.items.slice(0, idx).filter(function(r){ return r.key===row.key; });
   if(!prevRows.length) return '';
   return prevRows.map(function(p){
-    return '<div class="prevtag">əvvəl: #'+p.seq+' - '+p.qty+' əd</div>';
+    return '<div class="prevtag">əvvəl: #'+p.seq+' - '+fmtQty(p.qty)+' əd</div>';
   }).join('');
 }
 
@@ -1513,7 +1569,7 @@ function renderCountList(){
     return;
   }
   var totalQty=doc.items.reduce(function(s,r){return s+r.qty;},0);
-  $('countedTotalTag').textContent='('+doc.items.length+' sətir, '+totalQty+' ədəd)';
+  $('countedTotalTag').textContent='('+doc.items.length+' sətir, '+fmtQty(totalQty)+' ədəd)';
   wrap.innerHTML='';
   doc.items.forEach(function(row, idx){
     var div=document.createElement('div');
@@ -1526,7 +1582,7 @@ function renderCountList(){
       '<div class="seq">#'+row.seq+'</div>'+
       '<div class="main"><div class="nm">'+escapeHtml(row.name)+'</div>'+
       '<div class="cd">'+codeText+sysHtml+'</div>'+prevTag+'</div>'+
-      '<div class="qty">'+row.qty+'</div>';
+      '<div class="qty">'+fmtQty(row.qty)+'</div>';
     div.addEventListener('click', function(){ openEditRow(row.id); });
     wrap.appendChild(div);
   });
@@ -1753,19 +1809,21 @@ function openEditRow(rowId){
   requestAnimationFrame(function(){ $('editRowQtyInput').focus(); $('editRowQtyInput').select(); });
 }
 function syncEditRowQtyFromInput(){
-  var v=parseInt($('editRowQtyInput').value,10);
+  var raw=$('editRowQtyInput').value;
+  var v=toNum(raw);
   if(isNaN(v) || v<0) v=0;
+  v=roundQty(v);
   state.editingRowQty=v;
   return v;
 }
 $('editRowMinus').addEventListener('click', function(){
   syncEditRowQtyFromInput();
-  state.editingRowQty=Math.max(0, state.editingRowQty-1);
+  state.editingRowQty=roundQty(Math.max(0, state.editingRowQty-1));
   $('editRowQtyInput').value=state.editingRowQty;
 });
 $('editRowPlus').addEventListener('click', function(){
   syncEditRowQtyFromInput();
-  state.editingRowQty=state.editingRowQty+1;
+  state.editingRowQty=roundQty(state.editingRowQty+1);
   $('editRowQtyInput').value=state.editingRowQty;
 });
 $('editRowQtyInput').addEventListener('input', function(){
@@ -1798,7 +1856,7 @@ $('editRowSaveBtn').addEventListener('click', function(){
 $('exportDocBtn').addEventListener('click', function(){
   if(!state.activeDoc || !state.activeDoc.items.length){ showToast('Sayılan məhsul yoxdur','warn'); return; }
   var rows=computeAggregatedRows(state.activeDoc);
-  exportRowsToExcel(rows, 'sayim-'+dateStamp()+'.xlsx', 'Sayim');
+  exportRowsToExcel(rows, buildDocExportFilename(state.activeDoc,'sayim'), 'Sayim');
 });
 
 /* ===================== NƏTİCƏ (RESULTS VIEW) ===================== */
@@ -1883,9 +1941,9 @@ function renderResultsTable(){
   var missingRowsAll=rows.filter(function(r){return r.diff<0;});
   $('rsCountedType').textContent=rows.filter(function(r){return r.counted>0;}).length;
   $('rsExtraType').textContent=extraRowsAll.length;
-  $('rsExtraUnits').textContent=extraRowsAll.reduce(function(s,r){return s+r.diff;},0);
+  $('rsExtraUnits').textContent=fmtQty(extraRowsAll.reduce(function(s,r){return s+r.diff;},0));
   $('rsMissingType').textContent=missingRowsAll.length;
-  $('rsMissingUnits').textContent=missingRowsAll.reduce(function(s,r){return s+Math.abs(r.diff);},0);
+  $('rsMissingUnits').textContent=fmtQty(missingRowsAll.reduce(function(s,r){return s+Math.abs(r.diff);},0));
   var tbody=$('resultsBody'); tbody.innerHTML='';
   if(filtered.length===0){
     tbody.innerHTML='<tr><td colspan="9" style="text-align:center; color:var(--text-faint); padding:18px;">Nəticə yoxdur</td></tr>';
@@ -1900,8 +1958,8 @@ function renderResultsTable(){
     var nameHtml=buildRowNameHtml(r);
     tr.innerHTML='<td class="confirm-td"><input type="checkbox" class="confirm-chk" data-key="'+escapeHtml(r.key||'')+'"'+(isConfirmed?' checked':'')+'></td>'+
       '<td class="num">'+(idx+1)+'</td><td>'+nameHtml+'</td><td style="font-family:var(--mono); font-size:10.5px;">'+escapeHtml(r.artikul||r.barcode||'')+'</td>'+
-      '<td class="num">'+r.sys+'</td><td class="num">'+r.counted+'</td>'+
-      '<td class="num '+diffClass+'">'+(r.diff>0?'+':'')+r.diff+'</td>'+
+      '<td class="num">'+fmtQty(r.sys)+'</td><td class="num">'+fmtQty(r.counted)+'</td>'+
+      '<td class="num '+diffClass+'">'+fmtQtySigned(r.diff)+'</td>'+
       '<td class="num">'+(r.salePrice?r.salePrice.toFixed(2):'-')+'</td>'+
       '<td class="num">'+(r.alisPrice?r.alisPrice.toFixed(2):'-')+'</td>';
     tbody.appendChild(tr);
@@ -1941,7 +1999,7 @@ $('resultsBody').addEventListener('click', function(e){
 $('exportResultsBtn').addEventListener('click', function(){
   if(!state.activeDoc) return;
   var rows=sortRowsList(computeAggregatedRows(state.activeDoc), state.resultsSort);
-  exportRowsToExcel(rows, 'neticesi-'+dateStamp()+'.xlsx', 'Neticesi', state.activeDoc.confirmedRows||{});
+  exportRowsToExcel(rows, buildDocExportFilename(state.activeDoc,'neticesi'), 'Neticesi', state.activeDoc.confirmedRows||{});
 });
 
 /* Exports an array of computed result rows (see computeAggregatedRows /
@@ -1957,10 +2015,21 @@ function exportRowsToExcel(rows, filename, sheetName, confirmedSet){
   rows.forEach(function(r,idx){
     var isConfirmed = !!confirmedSet[r.key];
     if(isConfirmed) confirmedRowNumbers.push(idx+2); /* +1 header row, +1 to go from 0-based to 1-based */
-    aoa.push([isConfirmed?'✔':'', idx+1, r.name, r.artikul, r.barcode, r.sys, r.counted, r.diff, r.salePrice||0, r.alisPrice||0]);
+    aoa.push([isConfirmed?'✔':'', idx+1, r.name, r.artikul, r.barcode, roundQty(r.sys), roundQty(r.counted), roundQty(r.diff), roundQty(r.salePrice||0), roundQty(r.alisPrice||0)]);
   });
   var ws=XLSX.utils.aoa_to_sheet(aoa);
   ws['!cols']=[{wch:8},{wch:5},{wch:30},{wch:14},{wch:16},{wch:12},{wch:10},{wch:8},{wch:12},{wch:12}];
+  /* Force 2-decimal display (1.00 / 3.35 / 1.80 / 4.00 style) on the numeric
+     columns (Sistem qalığı, Sayılan, Fərq, Satış qiyməti, Alış qiyməti) so
+     fractional (kəsr) quantities show up cleanly when the file is opened in
+     Excel too, not just inside the app. */
+  var qtyCols=['F','G','H','I','J'];
+  for(var R=1; R<aoa.length; R++){
+    qtyCols.forEach(function(col){
+      var ref=col+(R+1);
+      if(ws[ref]) ws[ref].z='0.00';
+    });
+  }
   var wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
@@ -2129,7 +2198,16 @@ $('umumiSelectNoneBtn').addEventListener('click', function(){
 /* import previously-exported sayim/nəticə excel files and fold them into the aggregate */
 $('umumiExcelDropzone').addEventListener('click', function(){ $('umumiExcelInput').click(); });
 $('umumiExcelInput').addEventListener('change', function(e){
-  var files=Array.prototype.slice.call(e.target.files||[]);
+  processUmumiExcelFiles(e.target.files);
+  e.target.value='';
+});
+/* Drag-and-drop support: dragging one or more Excel files over the dropzone
+   highlights it (dragover class), and dropping them feeds the exact same
+   processing pipeline as picking files through the native file dialog. */
+setupDropzoneDnd($('umumiExcelDropzone'), function(files){ processUmumiExcelFiles(files); });
+
+function processUmumiExcelFiles(fileList){
+  var files=Array.prototype.slice.call(fileList||[]);
   if(!files.length) return;
   var chain=Promise.resolve();
   files.forEach(function(f){
@@ -2139,8 +2217,34 @@ $('umumiExcelInput').addEventListener('change', function(e){
     renderUmumiFileList();
     renderUmumiTable();
   });
-  e.target.value='';
-});
+}
+
+/* Generic drag-and-drop wiring shared by both dropzones on the Ümumi Nəticə
+   page. Adds a "dragover" class while a file is being dragged over the zone
+   (for visual feedback) and calls onFiles(fileList) with whatever files were
+   dropped, ignoring plain text/link drags that carry no files. */
+function setupDropzoneDnd(el, onFiles){
+  if(!el) return;
+  ['dragenter','dragover'].forEach(function(evt){
+    el.addEventListener(evt, function(e){
+      e.preventDefault(); e.stopPropagation();
+      el.classList.add('dragover');
+    });
+  });
+  ['dragleave','dragend'].forEach(function(evt){
+    el.addEventListener(evt, function(e){
+      e.preventDefault(); e.stopPropagation();
+      el.classList.remove('dragover');
+    });
+  });
+  el.addEventListener('drop', function(e){
+    e.preventDefault(); e.stopPropagation();
+    el.classList.remove('dragover');
+    var dt=e.dataTransfer;
+    if(!dt || !dt.files || !dt.files.length) return;
+    onFiles(dt.files);
+  });
+}
 
 function readUmumiExcelFile(file){
   return new Promise(function(resolve){
@@ -2207,6 +2311,132 @@ function renderUmumiFileList(){
   });
 }
 
+/* ===== Faylları birləşdir (cəmləmədən) — raw, row-for-row excel merge =====
+   Reads one or more previously-exported (by this app) .xlsx/.xls/.csv files
+   EXACTLY as they are (every column, every row, untouched — no parsing into
+   name/artikul/sys/counted etc., no summation of matching products) and,
+   on export, concatenates all of their data rows into a single new workbook,
+   one after another, in the order the files were added. If the same product
+   appears in several source files, each occurrence stays as its own separate
+   row (nothing is aggregated). A final extra column, "Mənbə fayl", is
+   appended to every row, holding the source file's name WITHOUT its
+   extension, so it's always possible to tell which original document a row
+   came from. */
+function readRawExcelFileForMerge(file){
+  return new Promise(function(resolve){
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      try{
+        var data=new Uint8Array(ev.target.result);
+        var wb=XLSX.read(data,{type:'array'});
+        var sheet=wb.Sheets[wb.SheetNames[0]];
+        var rows=XLSX.utils.sheet_to_json(sheet,{header:1, raw:true, defval:''});
+        rows=rows.filter(function(r){ return r.some(function(c){ return norm(c)!==''; }); });
+        var baseName=file.name.replace(/\.[^/.]+$/, ''); /* strip extension, keep the rest of the name as-is */
+        if(rows.length<1){
+          resolve({id:uid(), name:baseName, header:null, dataRows:[], error:false, empty:true});
+          return;
+        }
+        resolve({id:uid(), name:baseName, header:rows[0], dataRows:rows.slice(1), error:false, empty:(rows.length<2)});
+      }catch(err){
+        resolve({id:uid(), name:file.name, header:null, dataRows:[], error:true, empty:false});
+      }
+    };
+    reader.onerror=function(){
+      resolve({id:uid(), name:file.name, header:null, dataRows:[], error:true, empty:false});
+    };
+    reader.readAsArrayBuffer(file);
+  });
+}
+$('umumiMergeExcelDropzone').addEventListener('click', function(){ $('umumiMergeExcelInput').click(); });
+$('umumiMergeExcelInput').addEventListener('change', function(e){
+  processUmumiMergeFiles(e.target.files);
+  e.target.value='';
+});
+setupDropzoneDnd($('umumiMergeExcelDropzone'), function(files){ processUmumiMergeFiles(files); });
+
+function processUmumiMergeFiles(fileList){
+  var files=Array.prototype.slice.call(fileList||[]);
+  if(!files.length) return;
+  var chain=Promise.resolve();
+  var addedOk=0, failed=[];
+  files.forEach(function(f){
+    chain=chain.then(function(){
+      return readRawExcelFileForMerge(f).then(function(res){
+        if(res.error){ failed.push(res.name); return; }
+        if(!res.header || res.empty){ failed.push(res.name+' (boşdur)'); return; }
+        state.umumi.mergeFiles.push(res);
+        addedOk++;
+      });
+    });
+  });
+  chain.then(function(){
+    renderUmumiMergeFileList();
+    if(addedOk) showToast(addedOk+' fayl əlavə olundu','ok');
+    if(failed.length) showToast('Oxunmadı: '+failed.join(', '),'warn');
+  });
+}
+function renderUmumiMergeFileList(){
+  var wrap=$('umumiMergeFileList');
+  var btn=$('umumiMergeExportBtn');
+  if(!state.umumi.mergeFiles.length){
+    wrap.innerHTML='';
+    btn.disabled=true;
+    return;
+  }
+  btn.disabled=false;
+  wrap.innerHTML='';
+  state.umumi.mergeFiles.forEach(function(f){
+    var row=document.createElement('div');
+    row.className='imported-file-row';
+    row.innerHTML='<span>'+escapeHtml(f.name)+' · '+f.dataRows.length+' sətir</span><span class="rm" data-act="rm">✕ sil</span>';
+    row.querySelector('[data-act="rm"]').addEventListener('click', function(){
+      state.umumi.mergeFiles = state.umumi.mergeFiles.filter(function(x){ return x.id!==f.id; });
+      renderUmumiMergeFileList();
+    });
+    wrap.appendChild(row);
+  });
+}
+/* Builds and downloads the merged workbook. Uses the FIRST selected file's
+   header row as the canonical column layout (all the files are expected to
+   be exports of this very app, so their headers already match); every other
+   file's rows are padded/truncated to that same column count before the
+   source-file-name column is appended, so the sheet stays rectangular even
+   if a file happens to have a slightly different column count. */
+function exportMergedExcelRaw(){
+  var files=state.umumi.mergeFiles;
+  if(!files.length){ showToast('Əvvəlcə fayl seçin','warn'); return; }
+  var baseHeader=files[0].header.slice();
+  var colCount=baseHeader.length;
+  var header=baseHeader.slice();
+  header.push('Mənbə fayl');
+  var aoa=[header];
+  var totalRows=0;
+  files.forEach(function(f){
+    f.dataRows.forEach(function(r){
+      var rowCopy=r.slice(0, colCount);
+      while(rowCopy.length<colCount) rowCopy.push('');
+      rowCopy.push(f.name);
+      aoa.push(rowCopy);
+      totalRows++;
+    });
+  });
+  if(!totalRows){ showToast('Birləşdirmək üçün sətir tapılmadı','warn'); return; }
+  var ws=XLSX.utils.aoa_to_sheet(aoa);
+  var cols=[];
+  for(var c=0;c<colCount;c++) cols.push({wch:18});
+  cols.push({wch:22});
+  ws['!cols']=cols;
+  var wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Birlesmis');
+  var filename='fayllar-birlesdirilmis-'+dateStamp()+'.xlsx';
+  XLSX.writeFile(wb, filename);
+  showToast('Fayl endirildi: '+filename,'ok');
+}
+$('umumiMergeExportBtn').addEventListener('click', function(){
+  exportMergedExcelRaw();
+});
+
 /* Combines: (a) counted quantities from every SƏLƏCTED document in SƏNƏDLƏR,
    and (b) counted quantities from every imported excel file, into one
    aggregated per-product table with system quantity taken from the current
@@ -2268,9 +2498,9 @@ function renderUmumiTable(){
   var umMissingRowsAll=rows.filter(function(r){return r.diff<0;});
   $('umCountedType').textContent=rows.filter(function(r){return r.counted>0;}).length;
   $('umExtraType').textContent=umExtraRowsAll.length;
-  $('umExtraUnits').textContent=umExtraRowsAll.reduce(function(s,r){return s+r.diff;},0);
+  $('umExtraUnits').textContent=fmtQty(umExtraRowsAll.reduce(function(s,r){return s+r.diff;},0));
   $('umMissingType').textContent=umMissingRowsAll.length;
-  $('umMissingUnits').textContent=umMissingRowsAll.reduce(function(s,r){return s+Math.abs(r.diff);},0);
+  $('umMissingUnits').textContent=fmtQty(umMissingRowsAll.reduce(function(s,r){return s+Math.abs(r.diff);},0));
   var tbody=$('umumiBody'); tbody.innerHTML='';
   if(filtered.length===0){
     tbody.innerHTML='<tr><td colspan="9" style="text-align:center; color:var(--text-faint); padding:18px;">Nəticə yoxdur</td></tr>';
@@ -2285,8 +2515,8 @@ function renderUmumiTable(){
     var nameHtml=buildRowNameHtml(r);
     tr.innerHTML='<td class="confirm-td"><input type="checkbox" class="confirm-chk" data-key="'+escapeHtml(r.key||'')+'"'+(isConfirmed?' checked':'')+'></td>'+
       '<td class="num">'+(idx+1)+'</td><td>'+nameHtml+'</td><td style="font-family:var(--mono); font-size:10.5px;">'+escapeHtml(r.artikul||r.barcode||'')+'</td>'+
-      '<td class="num">'+r.sys+'</td><td class="num">'+r.counted+'</td>'+
-      '<td class="num '+diffClass+'">'+(r.diff>0?'+':'')+r.diff+'</td>'+
+      '<td class="num">'+fmtQty(r.sys)+'</td><td class="num">'+fmtQty(r.counted)+'</td>'+
+      '<td class="num '+diffClass+'">'+fmtQtySigned(r.diff)+'</td>'+
       '<td class="num">'+(r.salePrice?r.salePrice.toFixed(2):'-')+'</td>'+
       '<td class="num">'+(r.alisPrice?r.alisPrice.toFixed(2):'-')+'</td>';
     tbody.appendChild(tr);
@@ -2363,7 +2593,7 @@ function exportDetailedLogToExcel(){
   var aoa=[['Məhsulun adı','Sənəd','Tarix','Sıra','Sayı','Satış qiyməti','Alış qiyməti']];
   rows.forEach(function(r){
     var dateTimeStr = fmtDateAz(r.docDate)+(r.docTime?('*'+r.docTime):'');
-    aoa.push([r.name, r.docTitle, dateTimeStr, '#'+r.seq, r.qty+' ədəd', r.salePrice, r.alisPrice]);
+    aoa.push([r.name, r.docTitle, dateTimeStr, '#'+r.seq, fmtQty(r.qty)+' ədəd', roundQty(r.salePrice), roundQty(r.alisPrice)]);
   });
   var ws=XLSX.utils.aoa_to_sheet(aoa);
   ws['!cols']=[{wch:32},{wch:26},{wch:16},{wch:8},{wch:10},{wch:12},{wch:12}];
